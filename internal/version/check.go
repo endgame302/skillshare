@@ -15,8 +15,12 @@ import (
 // Version is set by main.go at startup
 var Version = "dev"
 
+// githubRepo is where version checks, upgrades and the dashboard download come
+// from. It is a var so a build can point it elsewhere with
+// -ldflags "-X skillshare/internal/version.githubRepo=owner/repo".
+var githubRepo = "runkids/skillshare"
+
 const (
-	githubRepo    = "runkids/skillshare"
 	checkInterval = 24 * time.Hour
 	cacheFileName = "version-check.json"
 )
