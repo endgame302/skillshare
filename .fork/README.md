@@ -13,6 +13,15 @@ This fork publishes **patched builds of runkids/skillshare** under the same vers
 | `fix(sync): never delete or re-point entries skillshare did not create` | runkids/skillshare#914 |
 | `docs: say what sync and init keep when skillshare did not create it` | runkids/skillshare#914 |
 | `chore(fork): …` (this folder, the release workflow, `githubRepo` as a var) | fork only |
+| `test(sourcefs): drop the raw-write allowance replaceIdenticalCopies no longer needs` | runkids/skillshare#914 |
+| `feat(fork): add a Marketplaces slot to the Hubs page` | fork only |
+| `feat(fork): search GitHub for skills on the Hubs page` | fork only |
+| `feat(fork): browse plain skill repos as hubs` (also `search --hub owner/repo`) | fork only |
+| `feat(fork): browse skills.sh on the Hubs page` | fork only |
+| `feat(fork): browse and install ClawHub skills on the Hubs page` | fork only |
+| `docs(fork): list the marketplace patches` | fork only |
+
+**Marketplaces:** each marketplace is a `ui/src/components/hub/marketplaces/<id>.market.tsx` file, picked up automatically, with its strings in `ui/src/i18n/fork/<feature>.json`. Upstream's locale files are never edited, so the replay rarely conflicts there. Server routes live in `internal/server/handler_fork_*.go`, each registered with one line in `server.go`.
 
 **How a release happens:** `.github/workflows/fork-release.yml` runs every Monday, or by hand from the Actions tab.
 1. It replays `patched` onto the latest upstream release.
