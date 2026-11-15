@@ -15,6 +15,8 @@ import type { HubListItem } from '../components/hub/HubList';
 import HubView from '../components/hub/HubView';
 import MoreMenu from '../components/hub/MoreMenu';
 import ShareDialog from '../components/hub/ShareDialog';
+import MarketplaceList from '../components/hub/marketplaces/MarketplaceList';
+import { findMarketplace } from '../components/hub/marketplaces/registry';
 import { COMMUNITY, DRAFT, sameURL } from '../components/hub/hubShared';
 import { queryKeys, staleTimes } from '../lib/queryKeys';
 import { useT, plural } from '../i18n';
@@ -66,7 +68,8 @@ export default function HubPage() {
   // Open on the user's own hub when there is one; that is the one they came to work on.
   // Otherwise open on the hub installs come from, once it is known there is no own hub.
   const fallback = draftsPending ? null : (items.find((i) => i.isDefault) ?? items[0])?.key ?? null;
-  const selected = picked && items.some((i) => i.key === picked) ? picked : drafts[0] ? DRAFT + drafts[0].id : fallback;
+  const market = findMarketplace(picked);
+  const selected = market || (picked && items.some((i) => i.key === picked)) ? picked : drafts[0] ? DRAFT + drafts[0].id : fallback;
   const draftId = selected?.startsWith(DRAFT) ? selected.slice(DRAFT.length) : undefined;
   const hub = draftId ? undefined : saved.find((h) => h.url === selected);
   const current = items.find((i) => i.key === selected);
@@ -166,10 +169,14 @@ export default function HubPage() {
           onAdd={addHub}
           onCreate={() => void create()}
           onImport={(file) => void importFile(file)}
-        />
+        >
+          <MarketplaceList selected={selected} onPick={pick} locked={editing} />
+        </HubList>
         <div className="flex min-w-0 flex-col gap-3">
           {error && <div role="alert" className="ss-note bad"><span className="flex-1 break-words">{error}</span></div>}
-          {!current ? (
+          {market ? (
+            <market.View key={market.id} />
+          ) : !current ? (
             <EmptyState icon={Library} title={t('hubs.browse.pickTitle')} description={t('hubs.browse.pickHint')} />
           ) : editing && draft.data ? (
             <HubEditor key={draft.data.draft.id} response={draft.data} onDone={() => setEditing(false)} />

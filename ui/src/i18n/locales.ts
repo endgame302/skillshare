@@ -9,6 +9,7 @@ import de from './locales/de.json';
 import fa from './locales/fa.json';
 import ptBR from './locales/pt-BR.json';
 import id from './locales/id.json';
+import { withForkMessages } from './forkMessages';
 
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_STORAGE_KEY = 'skillshare:locale';
@@ -31,7 +32,7 @@ export type Locale = (typeof supportedLocales)[number]['code'];
 export type Messages = Record<string, string>;
 export type TranslationParams = Record<string, string | number | boolean | null | undefined>;
 
-export const messagesByLocale: Record<Locale, Messages> = {
+export const messagesByLocale: Record<Locale, Messages> = withForkMessages({
   en,
   'zh-TW': zhTW,
   'zh-CN': zhCN,
@@ -43,7 +44,7 @@ export const messagesByLocale: Record<Locale, Messages> = {
   fa,
   'pt-BR': ptBR,
   id,
-};
+});
 
 export const supportedLocaleCodes = supportedLocales.map((locale) => locale.code);
 
