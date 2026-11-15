@@ -448,6 +448,14 @@
     "note": "Reconcile project agent metadata"
   },
   {
+    "file": "internal/forkmarket/clawhub/fetch.go",
+    "function": "pruneStaging",
+    "callee": "os.ReadDir",
+    "root": "dir",
+    "reason": "clone",
+    "note": "Prune stale ClawHub download staging folders outside the source"
+  },
+  {
     "file": "internal/git/info.go",
     "function": "HasLocalContent",
     "callee": "os.ReadDir",
