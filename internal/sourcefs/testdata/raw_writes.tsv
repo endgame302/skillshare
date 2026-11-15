@@ -108,6 +108,20 @@ internal/config/save_candidate.go	(*SaveCandidate).write	os.MkdirAll	dir	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.OpenFile	tmpPath	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.Remove	tmp.Name()	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.Rename	tmp.Name(), dest	config
+internal/forkmarket/clawhub/archive.go	writeEntry	os.MkdirAll	filepath.Dir(target)	clone
+internal/forkmarket/clawhub/archive.go	writeEntry	os.MkdirAll	target	clone
+internal/forkmarket/clawhub/archive.go	writeEntry	os.OpenFile	target	clone
+internal/forkmarket/clawhub/client.go	(*Client).writeCache	os.CreateTemp	c.CacheDir	config
+internal/forkmarket/clawhub/client.go	(*Client).writeCache	os.MkdirAll	c.CacheDir	config
+internal/forkmarket/clawhub/client.go	(*Client).writeCache	os.Remove	tmp.Name()	config
+internal/forkmarket/clawhub/client.go	(*Client).writeCache	os.Rename	tmp.Name(), c.cachePath()	config
+internal/forkmarket/clawhub/fetch.go	(*Client).Fetch	os.MkdirAll	parent	clone
+internal/forkmarket/clawhub/fetch.go	(*Client).Fetch	os.MkdirTemp	parent	clone
+internal/forkmarket/clawhub/fetch.go	(*Client).Fetch	os.RemoveAll	staging	clone
+internal/forkmarket/clawhub/fetch.go	(*Release).Discard	os.RemoveAll	r.staging	clone
+internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.RemoveAll	r.Dir	clone
+internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.Rename	r.staging, r.Dir	clone
+internal/forkmarket/clawhub/fetch.go	pruneStaging	os.RemoveAll	filepath.Join(dir, d.Name())	clone
 internal/git/info.go	resolveMetadataConflicts	os.WriteFile	filepath.Join(dir, path)	source-unmigrated
 internal/git/scope.go	DisableNestedRepo	os.Rename	gitDir, disabled	source-unmigrated
 internal/git/scope.go	InitScopeRepo	os.MkdirAll	dir	source-unmigrated
@@ -313,6 +327,7 @@ internal/server/handler_create_skill.go	(*Server).handleCreateSkill	os.WriteFile
 internal/server/handler_extensions.go	(*Server).handleExtensionsOpen	os.MkdirAll	dir	plugin
 internal/server/handler_extensions.go	(*Server).handleExtensionsRemove	os.RemoveAll	path	plugin
 internal/server/handler_extras.go	(*Server).handleExtrasCreate	os.MkdirAll	sourceDir	extras
+internal/server/handler_fork_clawhub.go	(*Server).handleClawHubInstall	os.RemoveAll	rel.Dir	clone
 internal/server/handler_skill_content.go	writeFileAtomic	os.CreateTemp	dir	agents
 internal/server/handler_skill_content.go	writeFileAtomic	os.Remove	tmpPath	agents
 internal/server/handler_skill_content.go	writeFileAtomic	os.Rename	tmpPath, path	agents

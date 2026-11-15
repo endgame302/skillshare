@@ -1,0 +1,133 @@
+{
+ "schemaVersion": 1,
+ "id": "clawhub-official-skills",
+ "generatedAt": "2026-11-15T00:42:19.926Z",
+ "sequence": 577,
+ "expiresAt": "2026-11-22T00:42:18.813Z",
+ "description": "Skills published by verified OpenClaw publishers on ClawHub.",
+ "entries": [
+  {
+   "type": "skill",
+   "id": "@alipay/alipay-aipay",
+   "title": "支付宝 AI 付接入",
+   "description": "支付宝 AI 付接入 Skill。当用户选择完成 AI 按量付费、AI 网页应用收款、AI 移动应用收款三类支付宝收单产品的代码开发、产品开通或全流程同时完成两者时，使用此 Skill。 触发关键词：\"AI支付\"、\"接支付宝\"、\"一站式接支付宝\"、\"接个支付\"、\"开发支付\"、\"402收款\"、\"AI按量付费\"、\"AI网页应用收款\"、\"AI移动应用收款\"、\"按量付费\"、\"快捷收款\"、\"快捷收单\"、\"网站支付\"、\"APP 支付\"、\"产品开通\"、\"商家开通\"、\"签约入驻\"等。",
+   "version": "1.7.0",
+   "state": "available",
+   "featured": false,
+   "publisher": {
+    "id": "alipay",
+    "trust": "official"
+   },
+   "install": {
+    "candidates": [
+     {
+      "sourceRef": "public-clawhub",
+      "package": "@alipay/alipay-aipay",
+      "version": "1.7.0",
+      "integrity": "sha256:8b72a3a9da128ac3285889e8c416f3e75c440be9878a976c4422cfb985ded024"
+     }
+    ]
+   }
+  },
+  {
+   "type": "skill",
+   "id": "@aws/agents-build",
+   "title": "agents-build",
+   "description": "Use when adding capabilities to an existing agent project — memory, app integration, VPC, multi-agent, migration, model changes, browser, code interpreter, or resource removal. Triggers on: \"add memory\", \"remember across sessions\", \"call agent from app\", \"invoke agent from code\", \"auth to call agent\", \"streaming responses\", \"VPC\", \"VPC connectivity\", \"VPC error\", \"can't reach from VPC\", \"multi-agent\", \"A2A\", \"A2A auth\", \"orchestrator not delegating\", \"specialist not called\", \"migrate Bedrock Agent\", \"after import\", \"migration issue\", \"framework for migration\", \"change model\", \"browser tool\", \"code interpreter\", \"delete agent\", \"tear down\", \"agentcore remove\", \"cross-account memory\", \"resource-based policy on memory\", \"pay for x402 content\", \"402 Payment Required\", \"microtransactions\", \"paid API or tool\". Not for connecting to external APIs via Gateway — use agents-connect. Not for scaffolding a new project — use agents-get-started. Not for CLI/dev server errors — use agents-debug. Strands vs LangGraph in a migration context routes here.",
+   "version": "b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c",
+   "state": "available",
+   "featured": false,
+   "publisher": {
+    "id": "aws",
+    "trust": "official"
+   },
+   "install": {
+    "candidates": [
+     {
+      "sourceRef": "public-github",
+      "package": "@aws/agents-build",
+      "version": "b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c",
+      "integrity": "sha256:d79709bf46ca8cd0fffe392a914cd56539b4b7c0ff0fe34c9583f24057300195",
+      "github": {
+       "repo": "aws/agent-toolkit-for-aws",
+       "path": "plugins/aws-agents/skills/agents-build",
+       "commit": "b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c",
+       "contentHash": "d79709bf46ca8cd0fffe392a914cd56539b4b7c0ff0fe34c9583f24057300195"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "skill",
+   "id": "@steipete/blogwatcher",
+   "title": "Blogwatcher",
+   "description": "Monitor blogs and RSS/Atom feeds for updates using the blogwatcher CLI.",
+   "version": "1.0.0",
+   "state": "available",
+   "featured": false,
+   "publisher": {
+    "id": "steipete",
+    "trust": "official"
+   },
+   "install": {
+    "candidates": [
+     {
+      "sourceRef": "public-clawhub",
+      "package": "@steipete/blogwatcher",
+      "version": "1.0.0",
+      "integrity": "sha256:d93023e42fc21a78891b1bddfc6a6a7b3c05dc5a96b8cd3ea3c50ce8528d43d3"
+     }
+    ]
+   }
+  },
+  {
+   "type": "skill",
+   "id": "@steipete/gog",
+   "title": "Gog",
+   "description": "Google Workspace CLI for Gmail, Calendar, Drive, Contacts, Sheets, and Docs.",
+   "version": "1.0.0",
+   "state": "available",
+   "featured": true,
+   "featuredAt": 1789594554485,
+   "publisher": {
+    "id": "steipete",
+    "trust": "official"
+   },
+   "install": {
+    "candidates": [
+     {
+      "sourceRef": "public-clawhub",
+      "package": "@steipete/gog",
+      "version": "1.0.0",
+      "integrity": "sha256:f2917d0e1129a3c9442664669b3a4b6e92639a343eedaa266ffe4f896d00f3e5"
+     }
+    ]
+   }
+  },
+  {
+   "type": "skill",
+   "id": "@steipete/qmd",
+   "title": "Qmd",
+   "description": "Local search/indexing CLI (BM25 + vectors + rerank) with MCP mode.",
+   "version": "1.0.0",
+   "state": "available",
+   "featured": true,
+   "featuredAt": 1789594554485,
+   "publisher": {
+    "id": "steipete",
+    "trust": "official"
+   },
+   "install": {
+    "candidates": [
+     {
+      "sourceRef": "public-clawhub",
+      "package": "@steipete/qmd",
+      "version": "1.0.0",
+      "integrity": "sha256:aa852ef1ed901736d738def596441e12a68bf181f76f11f4659e2fbda259bb4f"
+     }
+    ]
+   }
+  }
+ ]
+}
