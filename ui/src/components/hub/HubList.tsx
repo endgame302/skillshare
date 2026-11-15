@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Star } from 'lucide-react';
 import AddHubMenu from './AddHubMenu';
 import { useT } from '../../i18n';
@@ -19,10 +20,12 @@ interface Props {
   onAdd: (url: string) => Promise<void>;
   onCreate: () => void;
   onImport: (file: File) => void;
+  /** Shown under the list, in the same sticky column. */
+  children?: ReactNode;
 }
 
 /** Every hub in one list: the built-in one, saved subscriptions and the user's own. */
-export default function HubList({ items, selected, onPick, locked, onAdd, onCreate, onImport }: Props) {
+export default function HubList({ items, selected, onPick, locked, onAdd, onCreate, onImport, children }: Props) {
   const t = useT();
   return (
     <div className="sticky top-6 z-20 flex flex-col gap-3">
@@ -54,6 +57,7 @@ export default function HubList({ items, selected, onPick, locked, onAdd, onCrea
       ) : (
         <AddHubMenu onAdd={onAdd} onCreate={onCreate} onImport={onImport} />
       )}
+      {children}
     </div>
   );
 }
