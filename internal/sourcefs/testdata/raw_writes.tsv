@@ -237,6 +237,11 @@ internal/oplog/oplog.go	rewriteEntries	os.Remove	tmp	config
 internal/oplog/oplog.go	rewriteEntries	os.Remove	tmp	config
 internal/oplog/oplog.go	rewriteEntries	os.Remove	tmp	config
 internal/oplog/oplog.go	rewriteEntries	os.Rename	tmp, path	config
+internal/plainhub/plainhub.go	(*Loader).write	os.CreateTemp	l.CacheDir	config
+internal/plainhub/plainhub.go	(*Loader).write	os.MkdirAll	l.CacheDir	config
+internal/plainhub/plainhub.go	(*Loader).write	os.Remove	tmp.Name()	config
+internal/plainhub/plainhub.go	(*Loader).write	os.Remove	tmp.Name()	config
+internal/plainhub/plainhub.go	(*Loader).write	os.Rename	tmp.Name(), l.cachePath(idx.Key)	config
 internal/plugin/apply.go	(*Service).applyChange	os.RemoveAll	backup	plugin
 internal/plugin/apply.go	(*Service).applyChange	os.RemoveAll	failed	plugin
 internal/plugin/apply.go	(*Service).applyChange	os.Rename	backup, path	plugin

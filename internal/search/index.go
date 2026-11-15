@@ -236,6 +236,10 @@ func loadIndex(indexURL string, opts install.ParseOptions) (*indexDocument, erro
 	if s == "" {
 		return nil, fmt.Errorf("hub URL is required")
 	}
+	// Fork: a plain GitHub repo is indexed from its SKILL.md files (plainhub_fork.go).
+	if doc, ok, err := loadPlainRepoIndex(s, opts); ok {
+		return doc, err
+	}
 
 	// SSH-style hub source (git@host:owner/repo.git[//path]): clone the repo
 	// shallowly and read the index file from it. Auth is handled by the user's

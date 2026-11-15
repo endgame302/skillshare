@@ -7,6 +7,7 @@ import type { SearchResult } from '../../api/client';
 import { hubDrafts } from '../../api/hubDrafts';
 import EmptyState from '../EmptyState';
 import InstallDialog from '../InstallDialog';
+import { PlainRepoNote } from './PlainRepoHub';
 import Spinner from '../Spinner';
 import { Select } from '../Select';
 import { queryKeys, staleTimes } from '../../lib/queryKeys';
@@ -131,6 +132,7 @@ export default function HubView({ title, draftId, url, actions }: Props) {
           </span>
         </div>
         {draftId && <span className="text-[12.5px] text-ink-3">{t('hubs.view.mineNote')}</span>}
+        {url && <PlainRepoNote url={url} />}
       </div>
 
       {contents.isPending && (
