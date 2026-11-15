@@ -1,0 +1,90 @@
+{
+  "en": {
+    "hubs.add.hint": "Paste the URL or path of a skillshare-hub.json, or a GitHub repo of skills (owner/repo or its URL). Its name comes from the URL.",
+    "plainhub.tag": "Auto-indexed",
+    "plainhub.tagHint": "A GitHub repo with no skillshare-hub.json: skillshare lists its SKILL.md files itself.",
+    "plainhub.note": "Indexed automatically from the repo's SKILL.md files.",
+    "plainhub.noteAt": "Indexed automatically from {repo} at commit {commit}. Refresh picks up new commits.",
+    "plainhub.capped": "Only the first {listed} of {total} skills are listed."
+  },
+  "de": {
+    "hubs.add.hint": "Füge die URL oder den Pfad einer skillshare-hub.json ein, oder ein GitHub-Repository mit Skills (owner/repo oder seine URL). Der Name kommt aus der URL.",
+    "plainhub.tag": "Auto-indiziert",
+    "plainhub.tagHint": "Ein GitHub-Repository ohne skillshare-hub.json: skillshare listet seine SKILL.md-Dateien selbst auf.",
+    "plainhub.note": "Automatisch aus den SKILL.md-Dateien des Repositorys indiziert.",
+    "plainhub.noteAt": "Automatisch aus {repo} bei Commit {commit} indiziert. Aktualisieren holt neue Commits.",
+    "plainhub.capped": "Nur die ersten {listed} von {total} Skills werden aufgelistet."
+  },
+  "es": {
+    "hubs.add.hint": "Pega la URL o la ruta de un skillshare-hub.json, o un repositorio de GitHub con habilidades (owner/repo o su URL). El nombre se toma de la URL.",
+    "plainhub.tag": "Autoindexado",
+    "plainhub.tagHint": "Un repositorio de GitHub sin skillshare-hub.json: skillshare lista sus archivos SKILL.md por sí mismo.",
+    "plainhub.note": "Indexado automáticamente a partir de los archivos SKILL.md del repositorio.",
+    "plainhub.noteAt": "Indexado automáticamente desde {repo} en el commit {commit}. Actualizar recoge los commits nuevos.",
+    "plainhub.capped": "Solo se listan las primeras {listed} de {total} habilidades."
+  },
+  "fa": {
+    "hubs.add.hint": "نشانی یا مسیر یک skillshare-hub.json، یا یک مخزن GitHub از مهارت‌ها (owner/repo یا نشانی آن) را بچسبانید. نامش از نشانی گرفته می‌شود.",
+    "plainhub.tag": "نمایه‌سازی خودکار",
+    "plainhub.tagHint": "مخزن GitHub بدون skillshare-hub.json: skillshare خودش فایل‌های SKILL.md آن را فهرست می‌کند.",
+    "plainhub.note": "به‌طور خودکار از فایل‌های SKILL.md مخزن نمایه‌سازی شد.",
+    "plainhub.noteAt": "به‌طور خودکار از {repo} در کامیت {commit} نمایه‌سازی شد. تازه‌سازی کامیت‌های تازه را می‌آورد.",
+    "plainhub.capped": "فقط {listed} مهارت نخست از {total} مهارت فهرست شده است."
+  },
+  "fr": {
+    "hubs.add.hint": "Collez l'URL ou le chemin d'un skillshare-hub.json, ou un dépôt GitHub de compétences (owner/repo ou son URL). Son nom vient de l'URL.",
+    "plainhub.tag": "Auto-indexé",
+    "plainhub.tagHint": "Un dépôt GitHub sans skillshare-hub.json : skillshare liste lui-même ses fichiers SKILL.md.",
+    "plainhub.note": "Indexé automatiquement à partir des fichiers SKILL.md du dépôt.",
+    "plainhub.noteAt": "Indexé automatiquement depuis {repo} au commit {commit}. Actualiser récupère les nouveaux commits.",
+    "plainhub.capped": "Seules les {listed} premières compétences sur {total} sont listées."
+  },
+  "id": {
+    "hubs.add.hint": "Tempel URL atau path skillshare-hub.json, atau repositori GitHub berisi skill (owner/repo atau URL-nya). Namanya diambil dari URL.",
+    "plainhub.tag": "Terindeks otomatis",
+    "plainhub.tagHint": "Repositori GitHub tanpa skillshare-hub.json: skillshare mendaftar sendiri file SKILL.md di dalamnya.",
+    "plainhub.note": "Diindeks otomatis dari file SKILL.md di repositori.",
+    "plainhub.noteAt": "Diindeks otomatis dari {repo} pada commit {commit}. Segarkan untuk mengambil commit baru.",
+    "plainhub.capped": "Hanya {listed} skill pertama dari {total} yang ditampilkan."
+  },
+  "ja": {
+    "hubs.add.hint": "skillshare-hub.json の URL かパス、またはスキルの GitHub リポジトリ (owner/repo かその URL) を貼り付けます。名前は URL から付きます。",
+    "plainhub.tag": "自動インデックス",
+    "plainhub.tagHint": "skillshare-hub.json のない GitHub リポジトリです。skillshare が SKILL.md ファイルを自分で一覧にします。",
+    "plainhub.note": "リポジトリの SKILL.md ファイルから自動でインデックスしました。",
+    "plainhub.noteAt": "{repo} のコミット {commit} から自動でインデックスしました。更新すると新しいコミットを取り込みます。",
+    "plainhub.capped": "{total} 個のスキルのうち最初の {listed} 個だけを表示しています。"
+  },
+  "ko": {
+    "hubs.add.hint": "skillshare-hub.json의 URL이나 경로, 또는 스킬이 담긴 GitHub 저장소(owner/repo 또는 그 URL)를 붙여 넣으세요. 이름은 URL에서 가져옵니다.",
+    "plainhub.tag": "자동 색인",
+    "plainhub.tagHint": "skillshare-hub.json이 없는 GitHub 저장소입니다. skillshare가 SKILL.md 파일을 직접 나열합니다.",
+    "plainhub.note": "저장소의 SKILL.md 파일에서 자동으로 색인했습니다.",
+    "plainhub.noteAt": "{repo}의 커밋 {commit}에서 자동으로 색인했습니다. 새로고침하면 새 커밋을 가져옵니다.",
+    "plainhub.capped": "스킬 {total}개 중 처음 {listed}개만 표시합니다."
+  },
+  "pt-BR": {
+    "hubs.add.hint": "Cole a URL ou o caminho de um skillshare-hub.json, ou um repositório do GitHub com habilidades (owner/repo ou a URL dele). O nome vem da URL.",
+    "plainhub.tag": "Autoindexado",
+    "plainhub.tagHint": "Um repositório do GitHub sem skillshare-hub.json: o skillshare lista os arquivos SKILL.md dele por conta própria.",
+    "plainhub.note": "Indexado automaticamente a partir dos arquivos SKILL.md do repositório.",
+    "plainhub.noteAt": "Indexado automaticamente de {repo} no commit {commit}. Atualizar traz os commits novos.",
+    "plainhub.capped": "Só as primeiras {listed} de {total} habilidades são listadas."
+  },
+  "zh-CN": {
+    "hubs.add.hint": "粘贴 skillshare-hub.json 的网址或路径，或技能所在的 GitHub 仓库（owner/repo 或其网址），名称会取自网址。",
+    "plainhub.tag": "自动索引",
+    "plainhub.tagHint": "没有 skillshare-hub.json 的 GitHub 仓库：skillshare 会自行列出其中的 SKILL.md 文件。",
+    "plainhub.note": "已根据仓库中的 SKILL.md 文件自动索引。",
+    "plainhub.noteAt": "已从 {repo} 的提交 {commit} 自动索引。刷新可获取新提交。",
+    "plainhub.capped": "共 {total} 个技能，只列出前 {listed} 个。"
+  },
+  "zh-TW": {
+    "hubs.add.hint": "貼上 skillshare-hub.json 的網址或路徑，或技能所在的 GitHub 儲存庫（owner/repo 或其網址），名稱會取自網址。",
+    "plainhub.tag": "自動索引",
+    "plainhub.tagHint": "沒有 skillshare-hub.json 的 GitHub 儲存庫：skillshare 會自行列出其中的 SKILL.md 檔案。",
+    "plainhub.note": "已根據儲存庫中的 SKILL.md 檔案自動建立索引。",
+    "plainhub.noteAt": "已從 {repo} 的提交 {commit} 自動建立索引。重新整理可取得新提交。",
+    "plainhub.capped": "共 {total} 個技能，只列出前 {listed} 個。"
+  }
+}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Star } from 'lucide-react';
 import AddHubMenu from './AddHubMenu';
+import { PlainRepoTag } from './PlainRepoHub';
 import { useT } from '../../i18n';
 
 export interface HubListItem {
@@ -47,6 +48,7 @@ export default function HubList({ items, selected, onPick, locked, onAdd, onCrea
               {hub.label}
               {hub.isDefault && <Star size={12} className="fill-current text-warn" aria-label={t('hubs.default')} />}
               {hub.mine && <span className="ss-tag inf">{t('hubs.mine')}</span>}
+              {!hub.mine && <PlainRepoTag url={hub.key} />}
             </span>
             <span className="w-full truncate font-mono text-[11.5px] text-ink-3">{hub.sub}</span>
           </button>

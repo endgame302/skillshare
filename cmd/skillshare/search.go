@@ -12,6 +12,7 @@ import (
 
 	"skillshare/internal/config"
 	"skillshare/internal/install"
+	"skillshare/internal/plainhub"
 	"skillshare/internal/search"
 	"skillshare/internal/ui"
 )
@@ -257,6 +258,9 @@ func doSearch(query string, limit int, listOnly bool, indexURL string, mode runM
 			}
 		}
 		return false, err
+	}
+	if note := search.PlainRepoNote(indexURL); note != "" { // fork: plain repo hub cut at its cap
+		ui.Warning(note)
 	}
 
 	// No results
@@ -608,6 +612,7 @@ func printSearchHelp() {
 			{"skillshare search react --hub", "Search \"react\" in skillshare-hub"},
 			{"skillshare search --hub ./skillshare-hub.json", "Custom local index"},
 			{"skillshare search react --hub https://internal.corp/skills/index.json", ""},
+			{"skillshare search pdf --hub anthropics/skills", "A GitHub repo of skills, indexed from its SKILL.md files"},
 		}},
 		helpGroup{title: "Hub search with saved hubs", examples: true, rows: []helpRow{
 			{"skillshare hub add https://internal.corp/hub.json --label team", ""},
@@ -644,6 +649,9 @@ func resolveHubURL(input string, bare bool, mode runMode, cwd, defaultHubURL str
 	// Try label lookup
 	hubCfg := loadHubConfig(mode, cwd)
 	url, ok := hubCfg.ResolveHub(input)
+	if !ok && plainhub.Detect(input) { // fork: owner/repo is a plain GitHub repo hub
+		return input, nil
+	}
 	if !ok {
 		return "", fmt.Errorf("hub %q not found; run 'skillshare hub list' to see saved hubs", input)
 	}
