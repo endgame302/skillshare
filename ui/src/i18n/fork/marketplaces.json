@@ -1,5 +1,35 @@
 {
   "en": {
     "hubs.market.title": "Marketplaces"
+  },
+  "de": {
+    "hubs.market.title": "Marktplätze"
+  },
+  "es": {
+    "hubs.market.title": "Marketplaces"
+  },
+  "fa": {
+    "hubs.market.title": "بازارچه‌ها"
+  },
+  "fr": {
+    "hubs.market.title": "Places de marché"
+  },
+  "id": {
+    "hubs.market.title": "Marketplace"
+  },
+  "ja": {
+    "hubs.market.title": "マーケットプレイス"
+  },
+  "ko": {
+    "hubs.market.title": "마켓플레이스"
+  },
+  "pt-BR": {
+    "hubs.market.title": "Marketplaces"
+  },
+  "zh-CN": {
+    "hubs.market.title": "市场"
+  },
+  "zh-TW": {
+    "hubs.market.title": "市集"
   }
 }

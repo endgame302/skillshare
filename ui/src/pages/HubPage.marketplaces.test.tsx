@@ -47,6 +47,10 @@ it('lists marketplaces under the hubs and shows the picked one', async () => {
   expect(row).toHaveAttribute('aria-current', 'true');
 });
 
-it('gives fork strings to every locale, in English where a file has no translation', () => {
-  expect(messagesByLocale.de['hubs.market.title']).toBe('Marketplaces');
+it('gives fork strings to every locale, in its own language where a file translates them', () => {
+  // Every fork file is translated now; a locale a file leaves out falls back to its English,
+  // and the parity tests in src/i18n fail if any locale misses a fork key.
+  expect(messagesByLocale.en['hubs.market.title']).toBe('Marketplaces');
+  expect(messagesByLocale.de['hubs.market.title']).toBe('Marktplätze');
+  expect(messagesByLocale['zh-TW']['clawhub.onGitHub']).toBe('在 GitHub 上');
 });
