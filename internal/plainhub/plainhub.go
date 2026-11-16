@@ -310,10 +310,9 @@ func (l *Loader) write(idx *Index) error {
 type gitFetcher struct{}
 
 func (gitFetcher) Head(src *install.Source, opts install.ParseOptions) (string, error) {
-	// A missing or private repo makes GitHub ask for credentials. Git Credential
-	// Manager would then wait on a login prompt nobody sees, for minutes;
-	// GCM_INTERACTIVE=never makes it use stored credentials only and fail at once.
-	env := append(install.AuthEnvForURL(src.CloneURL, opts), "GCM_INTERACTIVE=never")
+	// A missing or private repo makes GitHub ask for credentials; gitenv keeps
+	// git and Git Credential Manager from prompting when nobody can answer.
+	env := install.AuthEnvForURL(src.CloneURL, opts)
 	if src.HasAmbiguousWebRef() {
 		// Settling a /tree/<ref>/ URL lists the remote's refs without that
 		// guard, so first make sure the repo can be read at all.
