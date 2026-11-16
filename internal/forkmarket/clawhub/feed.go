@@ -1,11 +1,11 @@
 // Package clawhub lists the skills in ClawHub's public feed and installs a ClawHub-hosted
-// skill only after its archive matches the feed's integrity hash (fork-only,
+// or GitHub-hosted skill only after its contents match the feed's integrity hash (fork-only,
 // endgame302/skillshare).
 //
 // The feed (https://clawhub.ai/v1/feeds/skills) is a weekly snapshot of skills by verified
 // publishers. Each entry names one install candidate: either a ClawHub-hosted release
 // ("public-clawhub", downloaded as a zip) or a GitHub folder at a pinned commit
-// ("public-github"). Only the first kind is installed here; see HostedCandidate.
+// ("public-github", checked against its content hash); see InstallCandidate.
 package clawhub
 
 import (
@@ -58,7 +58,8 @@ type Candidate struct {
 	GitHub    *GitHubSource `json:"github,omitempty"`
 }
 
-// GitHubSource is the pinned GitHub folder of a "public-github" candidate.
+// GitHubSource is the pinned GitHub folder of a "public-github" candidate, verified against
+// its folder contentHash before installing.
 type GitHubSource struct {
 	Repo        string `json:"repo"`
 	Path        string `json:"path"`
@@ -73,7 +74,6 @@ const (
 
 // Reasons an entry cannot be installed, as Item.Blocked carries them.
 const (
-	BlockedGitHub      = "github"       // a GitHub folder; its content hash is not checked here yet
 	BlockedUnavailable = "unavailable"  // the entry's state is not "available"
 	BlockedIntegrity   = "no_integrity" // no usable sha256 integrity value
 	BlockedUnsupported = "unsupported"  // no candidate this client knows
@@ -144,14 +144,40 @@ func ParseIntegrity(v string) (string, bool) {
 	return strings.ToLower(m[1]), true
 }
 
-// HostedCandidate returns the ClawHub-hosted release to install, or why there is none.
-// GitHub-backed entries carry a hash of the folder's files rather than of an archive, which
-// this package does not compute yet, so they are listed but not installed.
-func (e Entry) HostedCandidate() (Candidate, string) {
+var (
+	githubRepoPattern   = regexp.MustCompile(`^[A-Za-z0-9-]{1,39}/([A-Za-z0-9._-]{1,100})$`)
+	githubCommitPattern = regexp.MustCompile(`^[0-9a-f]{40}$`)
+)
+
+func validGitHub(id string, c Candidate) bool {
+	if c.GitHub == nil || c.Package != id {
+		return false
+	}
+	m := githubRepoPattern.FindStringSubmatch(c.GitHub.Repo)
+	if m == nil || m[1] == "." || m[1] == ".." {
+		return false
+	}
+	clean, dir, err := validName(c.GitHub.Path)
+	if err != nil || dir || clean != c.GitHub.Path {
+		return false
+	}
+	if !githubCommitPattern.MatchString(c.GitHub.Commit) || c.Version != c.GitHub.Commit {
+		return false
+	}
+	digest, ok := ParseIntegrity(c.Integrity)
+	if !ok || digest != strings.ToLower(c.GitHub.ContentHash) {
+		return false
+	}
+	return true
+}
+
+// InstallCandidate returns the first usable candidate in feed order, hosted or GitHub, or why
+// there is none.
+func (e Entry) InstallCandidate() (Candidate, string) {
 	if e.State != "available" {
 		return Candidate{}, BlockedUnavailable
 	}
-	github := false
+	badIntegrity := false
 	for _, c := range e.Install.Candidates {
 		switch c.SourceRef {
 		case sourceHosted:
@@ -159,15 +185,18 @@ func (e Entry) HostedCandidate() (Candidate, string) {
 				continue
 			}
 			if _, ok := ParseIntegrity(c.Integrity); !ok {
-				return Candidate{}, BlockedIntegrity
+				badIntegrity = true
+				continue
 			}
 			return c, ""
 		case sourceGitHub:
-			github = true
+			if validGitHub(e.ID, c) {
+				return c, ""
+			}
 		}
 	}
-	if github {
-		return Candidate{}, BlockedGitHub
+	if badIntegrity {
+		return Candidate{}, BlockedIntegrity
 	}
 	return Candidate{}, BlockedUnsupported
 }
@@ -223,14 +252,20 @@ func (f *Feed) Items() []Item {
 				it.GitHub = &gh
 			}
 		}
-		cand, blocked := e.HostedCandidate()
+		cand, blocked := e.InstallCandidate()
 		it.Installable = blocked == ""
 		it.Blocked = blocked
 		if it.Installable {
-			it.Source = "clawhub"
-			it.GitHub = nil
 			it.Integrity = cand.Integrity
 			it.Version = cand.Version
+			if cand.SourceRef == sourceGitHub && cand.GitHub != nil {
+				it.Source = "github"
+				gh := *cand.GitHub
+				it.GitHub = &gh
+			} else {
+				it.Source = "clawhub"
+				it.GitHub = nil
+			}
 		}
 		items = append(items, it)
 	}

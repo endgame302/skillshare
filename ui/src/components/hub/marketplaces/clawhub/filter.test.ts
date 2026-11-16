@@ -11,9 +11,20 @@ const item = (id: string, extra: Partial<ClawHubItem> = {}): ClawHubItem => {
   };
 };
 
+const awsCommit = 'b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c';
 const items = [
   item('@alipay/alipay-aipay', { title: '支付宝 AI 付接入', description: 'Alipay payments' }),
-  item('@aws/agents-build', { source: 'github', installable: false, blocked: 'github', description: 'Build AWS agents' }),
+  item('@aws/agents-build', {
+    source: 'github',
+    version: awsCommit,
+    description: 'Build AWS agents',
+    github: {
+      repo: 'aws/agent-toolkit-for-aws',
+      path: 'plugins/aws-agents/skills/agents-build',
+      commit: awsCommit,
+      contentHash: 'e5a5',
+    },
+  }),
   item('@steipete/blogwatcher', { title: 'Blogwatcher', description: 'Monitor blogs and RSS/Atom feeds' }),
   item('@steipete/gog', { title: 'Gog', featured: true, description: 'Google Workspace CLI' }),
   item('@acme/thing', { trust: 'community' }),
@@ -46,16 +57,29 @@ it('lists the trust levels in use', () => {
   expect(trustLevels(items)).toEqual(['community', 'official']);
 });
 
-it('finds installs by the ClawHub release folder they were copied from, not by name', () => {
+it('finds installs by release folder or GitHub source and branch, not by name', () => {
   const skills = [
     { name: 'blogwatcher', source: String.raw`C:\Users\me\AppData\Roaming\skillshare\clawhub\releases\@steipete\blogwatcher@1.0.0` },
     { name: 'gog', source: 'github.com/someone/gog' },
     { name: 'thing', source: '/home/me/.local/share/skillshare/clawhub/releases/@acme/thing@2.1.0-beta.1' },
     { name: 'gone', source: '/home/me/.local/share/skillshare/clawhub/releases/@nobody/gone@1.0.0' },
     { name: 'mine', source: '/home/me/skills/mine' },
+    { name: 'agents-build', source: 'github.com/aws/agent-toolkit-for-aws/plugins/aws-agents/skills/agents-build', branch: awsCommit },
+    { name: 'other-aws', source: 'github.com/aws/agent-toolkit-for-aws/plugins/aws-agents/skills/other', branch: awsCommit },
+    { name: 'no-branch', source: 'github.com/aws/agent-toolkit-for-aws/plugins/aws-agents/skills/agents-build' },
   ];
   expect([...installedVersions(skills, items)]).toEqual([
     ['@steipete/blogwatcher', '1.0.0'],
     ['@acme/thing', '2.1.0-beta.1'],
+    ['@aws/agents-build', awsCommit],
+  ]);
+});
+
+it('matches GitHub installs with protocol prefix and different case', () => {
+  const skills = [
+    { name: 'agents-build', source: 'https://GitHub.com/AWS/agent-toolkit-for-aws/plugins/aws-agents/skills/agents-build/', branch: 'deadbeef' },
+  ];
+  expect([...installedVersions(skills, items)]).toEqual([
+    ['@aws/agents-build', 'deadbeef'],
   ]);
 });

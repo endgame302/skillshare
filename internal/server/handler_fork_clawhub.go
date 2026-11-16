@@ -1,7 +1,7 @@
 package server
 
 // Fork-only (endgame302/skillshare): browse ClawHub's skills feed on the Hubs page and install
-// a ClawHub-hosted skill after checking its archive against the feed's integrity hash.
+// a ClawHub-hosted or GitHub-hosted skill after checking it against the feed's integrity hash.
 
 import (
 	"errors"
@@ -81,7 +81,7 @@ func (s *Server) handleClawHubInstall(w http.ResponseWriter, r *http.Request) {
 		writeCodedError(w, http.StatusNotFound, "clawhub_not_found", "ClawHub's feed no longer lists "+body.ID, nil)
 		return
 	}
-	cand, blocked := entry.HostedCandidate()
+	cand, blocked := entry.InstallCandidate()
 	if blocked != "" {
 		writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_not_installable",
 			(&clawhub.NotInstallableError{Reason: blocked}).Error(), map[string]string{"reason": blocked})
@@ -103,26 +103,16 @@ func (s *Server) handleClawHubInstall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if cand.GitHub != nil {
+		s.installClawHubGitHub(w, r, start, client, entry, cand, slug, body.Force)
+		return
+	}
+
 	// Download, verify and unpack without the server lock: it can take a while. The release then
 	// moves into its own folder of the store, which the installed skill records as its source.
 	rel, err := client.Fetch(r.Context(), snap, entry)
 	if err != nil {
-		var dl *clawhub.DownloadError
-		var ni *clawhub.NotInstallableError
-		switch {
-		case clawhub.IsIntegrityError(err):
-			writeCodedError(w, http.StatusBadGateway, "clawhub_integrity_mismatch", err.Error(), nil)
-		case errors.Is(err, clawhub.ErrNoSkillFile):
-			writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_no_skill_file", err.Error(), nil)
-		case errors.Is(err, clawhub.ErrUnsafeArchive):
-			writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_unsafe_archive", err.Error(), nil)
-		case errors.As(err, &ni):
-			writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_not_installable", err.Error(), map[string]string{"reason": ni.Reason})
-		case errors.As(err, &dl):
-			writeCodedError(w, http.StatusBadGateway, "clawhub_download_failed", err.Error(), nil)
-		default:
-			writeError(w, http.StatusInternalServerError, err.Error())
-		}
+		writeClawHubFetchError(w, err)
 		return
 	}
 	defer rel.Discard()
@@ -201,6 +191,25 @@ func (s *Server) handleClawHubInstall(w http.ResponseWriter, r *http.Request) {
 		"origin":    rel.Origin,
 		"version":   rel.Version,
 	})
+}
+
+func writeClawHubFetchError(w http.ResponseWriter, err error) {
+	var dl *clawhub.DownloadError
+	var ni *clawhub.NotInstallableError
+	switch {
+	case clawhub.IsIntegrityError(err):
+		writeCodedError(w, http.StatusBadGateway, "clawhub_integrity_mismatch", err.Error(), nil)
+	case errors.Is(err, clawhub.ErrNoSkillFile):
+		writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_no_skill_file", err.Error(), nil)
+	case errors.Is(err, clawhub.ErrUnsafeArchive):
+		writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_unsafe_archive", err.Error(), nil)
+	case errors.As(err, &ni):
+		writeCodedError(w, http.StatusUnprocessableEntity, "clawhub_not_installable", err.Error(), map[string]string{"reason": ni.Reason})
+	case errors.As(err, &dl):
+		writeCodedError(w, http.StatusBadGateway, "clawhub_download_failed", err.Error(), nil)
+	default:
+		writeError(w, http.StatusInternalServerError, err.Error())
+	}
 }
 
 func clawhubSkillExists(sourceDir, slug string) bool {

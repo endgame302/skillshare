@@ -34,17 +34,36 @@ export function trustLevels(items: ClawHubItem[]): string[] {
 /** The tail of a release folder's path: `clawhub/releases/@owner/slug@version`. */
 const releaseTail = /\/clawhub\/releases\/(@[^/]+\/[^/@]+)@([^/]+)$/;
 
+function normaliseGitHubSource(source: string): string {
+  return source.replaceAll('\\', '/').replace(/^https?:\/\//i, '').replace(/\/+$/, '').toLowerCase();
+}
+
 /**
- * The ClawHub version installed for each `@owner/slug`. An install records the folder of the
- * verified release it copied as the skill's source, and that path ends in `@owner/slug@version`.
- * A same-named skill from anywhere else does not count.
+ * The ClawHub version installed for each `@owner/slug`. A hosted install records the release
+ * folder it copied (`@owner/slug@version`); a GitHub install records `github.com/<repo>/<path>`
+ * with a non-empty `branch` commit. A same-named skill from anywhere else does not count.
  */
-export function installedVersions(skills: { source?: string }[], items: ClawHubItem[]): Map<string, string> {
-  const listed = new Set(items.map((it) => it.id));
+export function installedVersions(skills: { source?: string; branch?: string }[], items: ClawHubItem[]): Map<string, string> {
+  const listed = new Set<string>();
+  const githubItems = new Map<string, string>();
+  for (const it of items) {
+    listed.add(it.id);
+    if (it.source === 'github' && it.github) {
+      githubItems.set(normaliseGitHubSource(`github.com/${it.github.repo}/${it.github.path}`), it.id);
+    }
+  }
   const found = new Map<string, string>();
   for (const s of skills) {
-    const m = s.source?.replaceAll('\\', '/').match(releaseTail);
-    if (m && listed.has(m[1])) found.set(m[1], m[2]);
+    const raw = s.source?.replaceAll('\\', '/');
+    const m = raw?.match(releaseTail);
+    if (m && listed.has(m[1])) {
+      found.set(m[1], m[2]);
+      continue;
+    }
+    if (raw && s.branch) {
+      const id = githubItems.get(normaliseGitHubSource(raw));
+      if (id) found.set(id, s.branch);
+    }
   }
   return found;
 }

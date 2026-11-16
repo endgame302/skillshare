@@ -263,7 +263,7 @@ func TestFetch_UnpacksVerifiedReleaseIntoCache(t *testing.T) {
 
 	gh, _ := snap.Feed.Lookup("@aws/agents-build")
 	var ni *NotInstallableError
-	if _, err := c.Fetch(context.Background(), snap, gh); !errors.As(err, &ni) || ni.Reason != BlockedGitHub {
+	if _, err := c.Fetch(context.Background(), snap, gh); !errors.As(err, &ni) || ni.Reason != BlockedUnsupported {
 		t.Errorf("GitHub-backed: %v", err)
 	}
 }
