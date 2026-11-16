@@ -126,6 +126,10 @@ internal/forkmarket/clawhub/fetch.go	(*Release).Discard	os.RemoveAll	r.staging	c
 internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.RemoveAll	r.Dir	clone
 internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.Rename	r.staging, r.Dir	clone
 internal/forkmarket/clawhub/fetch.go	pruneStaging	os.RemoveAll	filepath.Join(dir, d.Name())	clone
+internal/forkmarket/mcpreg/store.go	writeFileAtomic	os.CreateTemp	dir	config
+internal/forkmarket/mcpreg/store.go	writeFileAtomic	os.MkdirAll	dir	config
+internal/forkmarket/mcpreg/store.go	writeFileAtomic	os.Remove	tmp.Name()	config
+internal/forkmarket/mcpreg/store.go	writeFileAtomic	os.Rename	tmp.Name(), path	config
 internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.CreateTemp	c.CacheDir	config
 internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.MkdirAll	c.CacheDir	config
 internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.Remove	tmp.Name()	config

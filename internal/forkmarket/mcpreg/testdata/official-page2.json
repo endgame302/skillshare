@@ -1,0 +1,316 @@
+{
+ "servers": [
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+    "name": "ai.smithery/afgong-sqlite-mcp-server",
+    "description": "Explore your Messages SQLite database to browse tables and inspect schemas with ease. Run flexible…",
+    "repository": {
+     "url": "https://github.com/afgong/sqlite-mcp-server",
+     "source": "github",
+     "subfolder": "sqlite-explorer-fastmcp-mcp-server"
+    },
+    "version": "1.16.0",
+    "remotes": [
+     {
+      "type": "streamable-http",
+      "url": "https://server.smithery.ai/@afgong/sqlite-mcp-server/mcp",
+      "headers": [
+       {
+        "description": "Bearer token for Smithery authentication",
+        "value": "Bearer {smithery_api_key}",
+        "name": "Authorization"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2025-10-02T21:47:24.293477Z",
+     "publishedAt": "2025-10-02T21:47:24.293477Z",
+     "updatedAt": "2025-10-02T21:47:24.293477Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+    "name": "io.github.dinesh-nalla-se/playwright-mcp",
+    "description": "Playwright Tools for MCP",
+    "repository": {
+     "url": "https://github.com/dinesh-nalla-se/playwright-mcp",
+     "source": "github"
+    },
+    "version": "1.0.0",
+    "packages": [
+     {
+      "registryType": "npm",
+      "identifier": "@dinesh-nalla-se/playwright-mcp",
+      "version": "0.0.47",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Your API key for the service",
+        "isRequired": true,
+        "format": "string",
+        "isSecret": true,
+        "name": "YOUR_API_KEY"
+       }
+      ]
+     },
+     {
+      "registryType": "oci",
+      "identifier": "docker.io/dineshn51331/playwright-mcp:1.0.0",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Your API key for the service",
+        "isRequired": true,
+        "format": "string",
+        "isSecret": true,
+        "name": "YOUR_API_KEY"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2025-11-17T10:25:36.916523Z",
+     "publishedAt": "2025-11-17T10:25:36.916523Z",
+     "updatedAt": "2025-11-17T10:25:36.916523Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.arifulislamat/database-mcp-sqlite",
+    "description": "MCP server for SQLite databases. Read-only by default, row caps, statement timeouts.",
+    "repository": {
+     "url": "https://github.com/arifulislamat/database-mcp",
+     "source": "github"
+    },
+    "version": "0.5.0",
+    "packages": [
+     {
+      "registryType": "npm",
+      "identifier": "@database-mcp/sqlite",
+      "version": "0.5.0",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Path to the SQLite database file",
+        "isRequired": true,
+        "format": "string",
+        "name": "SQLITE_PATH"
+       }
+      ]
+     },
+     {
+      "registryType": "pypi",
+      "identifier": "database-mcp-sqlite",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Path to the SQLite database file",
+        "isRequired": true,
+        "format": "string",
+        "name": "SQLITE_PATH"
+       }
+      ]
+     },
+     {
+      "registryType": "cargo",
+      "identifier": "database-mcp-rs-sqlite",
+      "version": "0.1.1",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Path to the SQLite database file",
+        "isRequired": true,
+        "format": "string",
+        "name": "SQLITE_PATH"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-10-17T09:53:07.587018Z",
+     "publishedAt": "2026-10-17T09:53:07.587018Z",
+     "updatedAt": "2026-10-17T09:53:07.587018Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.daedalus/mcp-sqlite3",
+    "description": "MCP server exposing sqlite3 library functionality",
+    "repository": {
+     "url": "https://github.com/daedalus/mcp-sqlite3",
+     "source": "github"
+    },
+    "version": "0.1.3",
+    "packages": [
+     {
+      "registryType": "pypi",
+      "identifier": "mcp-sqlite3",
+      "version": "0.1.3",
+      "transport": {
+       "type": "stdio"
+      }
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-03-31T06:38:18.725442Z",
+     "publishedAt": "2026-03-31T06:38:18.725442Z",
+     "updatedAt": "2026-03-31T06:38:18.725442Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "com.microsoft/playwright-cloud-browsers",
+    "description": "Managed Playwright cloud browsers for scalable browser automation and AI agent workflows",
+    "title": "Playwright Cloud Browsers",
+    "repository": {
+     "url": "https://github.com/Azure/playwright-workspaces/",
+     "source": "github"
+    },
+    "version": "1.0.1",
+    "websiteUrl": "https://aka.ms/pww/mcp/docs",
+    "remotes": [
+     {
+      "type": "streamable-http",
+      "url": "https://{region}.mcp.playwright.microsoft.com/playwrightworkspaces/{workspaceId}/mcp",
+      "variables": {
+       "region": {
+        "description": "Azure region hosting the Playwright workspace",
+        "isRequired": true,
+        "placeholder": "eastus"
+       },
+       "workspaceId": {
+        "description": "Playwright workspace ID",
+        "isRequired": true
+       }
+      }
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-10-27T07:53:59.419104Z",
+     "publishedAt": "2026-10-27T07:53:59.419104Z",
+     "updatedAt": "2026-10-27T07:53:59.419104Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "description": "Real-time infrastructure monitoring with metrics, logs, alerts, and ML-based anomaly detection.",
+    "name": "io.github.netdata/mcp-server",
+    "remotes": [
+     {
+      "headers": [
+       {
+        "description": "Netdata Cloud API token with scope:mcp",
+        "isRequired": true,
+        "isSecret": true,
+        "value": "Bearer {NETDATA_CLOUD_API_TOKEN}",
+        "variables": {
+         "NETDATA_CLOUD_API_TOKEN": {
+          "description": "Netdata Cloud API token (create at app.netdata.cloud > User Settings > API Tokens with scope:mcp)",
+          "isSecret": true
+         }
+        },
+        "name": "Authorization"
+       }
+      ],
+      "type": "streamable-http",
+      "url": "https://app.netdata.cloud/api/v1/mcp"
+     }
+    ],
+    "repository": {
+     "source": "github",
+     "subfolder": "docs/netdata-ai/mcp",
+     "url": "https://github.com/netdata/netdata"
+    },
+    "title": "Netdata",
+    "version": "2.12.3",
+    "websiteUrl": "https://www.netdata.cloud"
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "isLatest": true,
+     "publishedAt": "2026-11-04T16:43:45Z",
+     "status": "active",
+     "updatedAt": "2026-11-16T09:28:23Z"
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.daedalus/old-sqlite",
+    "description": "MCP server exposing sqlite3 library functionality",
+    "repository": {
+     "url": "https://github.com/daedalus/mcp-sqlite3",
+     "source": "github"
+    },
+    "version": "0.1.3",
+    "packages": [
+     {
+      "registryType": "pypi",
+      "identifier": "mcp-sqlite3",
+      "version": "0.1.3",
+      "transport": {
+       "type": "stdio"
+      }
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "deprecated",
+     "statusChangedAt": "2026-03-31T06:38:18.725442Z",
+     "publishedAt": "2026-03-31T06:38:18.725442Z",
+     "updatedAt": "2026-03-31T06:38:18.725442Z",
+     "isLatest": true
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "count": 5
+ }
+}

@@ -1,0 +1,395 @@
+{
+ "servers": [
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.brave/brave-search-mcp-server",
+    "description": "Brave Search MCP Server: web results, images, videos, rich results, AI summaries, and more.",
+    "repository": {
+     "url": "https://github.com/brave/brave-search-mcp-server",
+     "source": "github"
+    },
+    "version": "2.1.3",
+    "packages": [
+     {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@brave/brave-search-mcp-server",
+      "version": "2.1.3",
+      "transport": {
+       "type": "stdio"
+      },
+      "environmentVariables": [
+       {
+        "description": "Your API key for the service",
+        "isRequired": true,
+        "format": "string",
+        "isSecret": true,
+        "name": "BRAVE_API_KEY"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-08-20T16:12:11.244327Z",
+     "publishedAt": "2026-08-20T16:12:11.244327Z",
+     "updatedAt": "2026-08-20T16:12:11.244327Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+    "name": "com.pulsemcp/remote-filesystem",
+    "description": "MCP server for remote filesystem operations on cloud storage (Google Cloud Storage).",
+    "repository": {
+     "url": "https://github.com/pulsemcp/mcp-servers",
+     "source": "github",
+     "subfolder": "experimental/remote-filesystem"
+    },
+    "version": "0.1.5",
+    "packages": [
+     {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "remote-filesystem-mcp-server",
+      "version": "0.1.5",
+      "runtimeHint": "npx",
+      "transport": {
+       "type": "stdio"
+      },
+      "runtimeArguments": [
+       {
+        "type": "positional",
+        "value": "-y"
+       }
+      ],
+      "environmentVariables": [
+       {
+        "description": "Google Cloud Storage bucket name.",
+        "isRequired": true,
+        "name": "GCS_BUCKET"
+       },
+       {
+        "description": "Google Cloud project ID.",
+        "name": "GCS_PROJECT_ID"
+       },
+       {
+        "description": "Service account email for inline credentials.",
+        "name": "GCS_CLIENT_EMAIL"
+       },
+       {
+        "description": "Service account private key for inline credentials.",
+        "isSecret": true,
+        "name": "GCS_PRIVATE_KEY"
+       },
+       {
+        "description": "Path to Google Cloud service account key file.",
+        "name": "GOOGLE_APPLICATION_CREDENTIALS"
+       },
+       {
+        "description": "Root path prefix to restrict access within bucket.",
+        "name": "GCS_ROOT_PATH"
+       },
+       {
+        "description": "Make uploaded files publicly accessible.",
+        "default": "false",
+        "name": "GCS_MAKE_PUBLIC"
+       },
+       {
+        "description": "Comma-separated tool groups: readonly or readwrite.",
+        "name": "ENABLED_TOOLGROUPS"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-06-26T14:07:53.723164Z",
+     "publishedAt": "2026-06-26T14:07:53.723164Z",
+     "updatedAt": "2026-06-26T14:07:53.723164Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+    "name": "io.github.bytedance/mcp-server-filesystem",
+    "description": "MCP server for filesystem access",
+    "repository": {
+     "url": "https://github.com/bytedance/UI-TARS-desktop",
+     "source": "github",
+     "subfolder": "packages/agent-infra/mcp-servers/filesystem"
+    },
+    "version": "1.0.0",
+    "packages": [
+     {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@agent-infra/mcp-server-filesystem",
+      "version": "latest",
+      "transport": {
+       "type": "stdio"
+      },
+      "packageArguments": [
+       {
+        "description": "Comma-separated list of allowed directories for file operations",
+        "isRequired": true,
+        "format": "string",
+        "type": "named",
+        "name": "allowed-directories"
+       }
+      ]
+     },
+     {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@agent-infra/mcp-server-filesystem",
+      "version": "latest",
+      "runtimeHint": "npx",
+      "transport": {
+       "type": "sse",
+       "url": "http://127.0.0.1:{port}/sse"
+      },
+      "packageArguments": [
+       {
+        "description": "Comma-separated list of allowed directories for file operations",
+        "isRequired": true,
+        "format": "string",
+        "type": "named",
+        "name": "allowed-directories"
+       },
+       {
+        "description": "Server port number",
+        "isRequired": true,
+        "format": "number",
+        "default": "8089",
+        "type": "named",
+        "name": "port"
+       }
+      ]
+     },
+     {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@agent-infra/mcp-server-filesystem",
+      "version": "latest",
+      "runtimeHint": "npx",
+      "transport": {
+       "type": "streamable-http",
+       "url": "http://127.0.0.1:{port}/mcp"
+      },
+      "packageArguments": [
+       {
+        "description": "Comma-separated list of allowed directories for file operations",
+        "isRequired": true,
+        "format": "string",
+        "type": "named",
+        "name": "allowed-directories"
+       },
+       {
+        "description": "Server port number",
+        "isRequired": true,
+        "format": "number",
+        "default": "8089",
+        "type": "named",
+        "name": "port"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2025-09-09T06:16:36.369748Z",
+     "publishedAt": "2025-09-09T06:16:36.369748Z",
+     "updatedAt": "2025-09-09T06:16:36.369748Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.Evozim/chroot-filesystem-jail-mcp",
+    "description": "Premium agentic endpoint for chroot-filesystem-jail-mcp.",
+    "title": "Execute chroot-filesystem-jail-mcp",
+    "version": "2.0.0",
+    "remotes": [
+     {
+      "type": "sse",
+      "url": "https://api.m2mcent.com/chroot-filesystem-jail-mcp/sse",
+      "headers": [
+       {
+        "description": "Base64-encoded EIP-3009 TransferWithAuthorization signature for x402 V2 settlement on Base Mainnet ($0.2 USDC).",
+        "isSecret": true,
+        "name": "Payment-Signature"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-08-17T21:59:01.940669Z",
+     "publishedAt": "2026-08-17T21:59:01.940669Z",
+     "updatedAt": "2026-08-17T21:59:01.940669Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.fieldcure/filesystem",
+    "description": "Secure MCP server for sandboxed filesystem operations with document parsing support.",
+    "repository": {
+     "url": "https://github.com/fieldcure/fieldcure-mcp-filesystem",
+     "source": "github"
+    },
+    "version": "1.1.2",
+    "packages": [
+     {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org/v3/index.json",
+      "identifier": "FieldCure.Mcp.Filesystem",
+      "version": "1.1.2",
+      "runtimeHint": "dnx",
+      "transport": {
+       "type": "stdio"
+      }
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-05-25T09:23:37.340888Z",
+     "publishedAt": "2026-05-25T09:23:37.340888Z",
+     "updatedAt": "2026-05-25T09:23:37.340888Z",
+     "isLatest": true
+    }
+   }
+  },
+  {
+   "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "dev.xakpc/sqlite-mcp-sidecar",
+    "description": "Agent-safe MCP sidecar for one live SQLite database: read-only default, bounded writes.",
+    "title": "SQLite MCP Sidecar",
+    "repository": {
+     "url": "https://github.com/xakpc/sqlite-mcp-sidecar",
+     "source": "github"
+    },
+    "version": "0.1.3",
+    "websiteUrl": "https://xakpc.dev",
+    "packages": [
+     {
+      "registryType": "oci",
+      "identifier": "ghcr.io/xakpc/sqlite-mcp-sidecar:0.1.3",
+      "transport": {
+       "type": "streamable-http",
+       "url": "http://localhost:8080/db/mcp",
+       "headers": [
+        {
+         "description": "Bearer token: the value of SQLITE_SIDECAR_TOKEN",
+         "isRequired": true,
+         "value": "Bearer {token}",
+         "isSecret": true,
+         "variables": {
+          "token": {
+           "description": "The deployment token (SQLITE_SIDECAR_TOKEN)",
+           "isRequired": true,
+           "isSecret": true
+          }
+         },
+         "name": "Authorization"
+        }
+       ]
+      },
+      "runtimeArguments": [
+       {
+        "description": "Publish the port on loopback only",
+        "type": "named",
+        "name": "-p",
+        "value": "127.0.0.1:8080:8080"
+       },
+       {
+        "description": "Mount the directory that holds the existing database (must be writable)",
+        "isRequired": true,
+        "variables": {
+         "data_dir": {
+          "description": "Host directory that contains the SQLite file",
+          "isRequired": true,
+          "format": "filepath"
+         }
+        },
+        "type": "named",
+        "name": "-v",
+        "value": "{data_dir}:/data"
+       },
+       {
+        "description": "Read-only root filesystem",
+        "type": "named",
+        "name": "--read-only"
+       },
+       {
+        "description": "Scratch space for SQLite",
+        "type": "named",
+        "name": "--tmpfs",
+        "value": "/tmp"
+       },
+       {
+        "description": "Drop all Linux capabilities",
+        "type": "named",
+        "name": "--cap-drop",
+        "value": "ALL"
+       }
+      ],
+      "environmentVariables": [
+       {
+        "description": "Path of the existing SQLite file inside the container",
+        "isRequired": true,
+        "default": "/data/app.db",
+        "name": "SQLITE_SIDECAR_DB"
+       },
+       {
+        "description": "Deployment bearer token (a long random string)",
+        "isRequired": true,
+        "isSecret": true,
+        "name": "SQLITE_SIDECAR_TOKEN"
+       },
+       {
+        "description": "Permission set: schema, read, write, backup, diagnostics, danger-raw-write",
+        "default": "schema,read",
+        "name": "SQLITE_SIDECAR_PERMISSIONS"
+       }
+      ]
+     }
+    ]
+   },
+   "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+     "status": "active",
+     "statusChangedAt": "2026-10-24T02:51:25.35021Z",
+     "publishedAt": "2026-10-24T02:51:25.35021Z",
+     "updatedAt": "2026-10-24T02:51:25.35021Z",
+     "isLatest": true
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "nextCursor": "io.github.Oncorporation/filesystem-server:0.1.4",
+  "count": 6
+ }
+}

@@ -742,6 +742,7 @@ func (s *Server) registerRoutes() {
 	s.registerForkClawHubRoutes()       // fork-only (endgame302/skillshare): ClawHub marketplace
 	s.registerForkAgentsRoutes()        // fork-only (endgame302/skillshare): agents marketplace
 	s.registerForkPluginCatalogRoutes() // fork-only (endgame302/skillshare): plugins marketplace
+	s.registerForkMCPMarketRoutes()     // fork-only (endgame302/skillshare): MCP marketplace
 
 	// SPA fallback — must be last
 	if s.uiDistDir != "" {
