@@ -32,8 +32,10 @@ func TestParseFeed_Sample(t *testing.T) {
 		t.Error("gog and qmd are featured in the sample")
 	}
 	gh := items["@aws/agents-build"]
-	if gh.Installable || gh.Blocked != BlockedGitHub || gh.Source != "github" || gh.GitHub == nil ||
-		gh.GitHub.Repo != "aws/agent-toolkit-for-aws" || gh.Integrity != "" {
+	const wantCommit = "b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c"
+	const wantIntegrity = "sha256:d79709bf46ca8cd0fffe392a914cd56539b4b7c0ff0fe34c9583f24057300195"
+	if !gh.Installable || gh.Blocked != "" || gh.Source != "github" || gh.GitHub == nil ||
+		gh.GitHub.Repo != "aws/agent-toolkit-for-aws" || gh.Integrity != wantIntegrity || gh.Version != wantCommit {
 		t.Errorf("GitHub-backed item = %+v", gh)
 	}
 	if ali := items["@alipay/alipay-aipay"]; ali.Title != "支付宝 AI 付接入" || !ali.Installable {
@@ -82,16 +84,43 @@ func TestParseID(t *testing.T) {
 	}
 }
 
-func TestHostedCandidate(t *testing.T) {
+func TestInstallCandidate(t *testing.T) {
 	entry := func(state, sourceRef, pkg, integrity string) Entry {
 		e := Entry{Type: "skill", ID: "@a/b", Version: "1.0.0", State: state}
 		e.Install.Candidates = []Candidate{{SourceRef: sourceRef, Package: pkg, Version: "1.0.0", Integrity: integrity}}
 		return e
 	}
 	good := "sha256:" + strings.Repeat("A", 64)
-	if c, blocked := entry("available", "public-clawhub", "@a/b", good).HostedCandidate(); blocked != "" || c.Version != "1.0.0" {
+	if c, blocked := entry("available", "public-clawhub", "@a/b", good).InstallCandidate(); blocked != "" || c.Version != "1.0.0" {
 		t.Errorf("hosted: %+v, %q", c, blocked)
 	}
+
+	commit := strings.Repeat("a", 40)
+	hashHex := strings.Repeat("a", 64)
+	ghEntry := func(mut func(*Candidate)) Entry {
+		c := Candidate{
+			SourceRef: "public-github",
+			Package:   "@a/b",
+			Version:   commit,
+			Integrity: good,
+			GitHub: &GitHubSource{
+				Repo:        "owner/repo",
+				Path:        "skills/b",
+				Commit:      commit,
+				ContentHash: hashHex,
+			},
+		}
+		if mut != nil {
+			mut(&c)
+		}
+		e := Entry{Type: "skill", ID: "@a/b", Version: commit, State: "available"}
+		e.Install.Candidates = []Candidate{c}
+		return e
+	}
+	if c, blocked := ghEntry(nil).InstallCandidate(); blocked != "" || c.Version != commit {
+		t.Errorf("github: %+v, %q", c, blocked)
+	}
+
 	for name, tc := range map[string]struct {
 		e    Entry
 		want string
@@ -99,7 +128,6 @@ func TestHostedCandidate(t *testing.T) {
 		"no integrity":   {entry("available", "public-clawhub", "@a/b", ""), BlockedIntegrity},
 		"base64":         {entry("available", "public-clawhub", "@a/b", "sha256-abc="), BlockedIntegrity},
 		"unavailable":    {entry("deprecated", "public-clawhub", "@a/b", good), BlockedUnavailable},
-		"github":         {entry("available", "public-github", "@a/b", good), BlockedGitHub},
 		"other package":  {entry("available", "public-clawhub", "@a/c", good), BlockedUnsupported},
 		"unknown source": {entry("available", "private", "@a/b", good), BlockedUnsupported},
 		"no candidates":  {Entry{ID: "@a/b", State: "available"}, BlockedUnsupported},
@@ -108,8 +136,14 @@ func TestHostedCandidate(t *testing.T) {
 			e.Install.Candidates[0].Version = "../1"
 			return e
 		}(), BlockedUnsupported},
+		"github bad commit":         {ghEntry(func(c *Candidate) { c.GitHub.Commit = "main" }), BlockedUnsupported},
+		"github version mismatch":   {ghEntry(func(c *Candidate) { c.Version = strings.Repeat("b", 40) }), BlockedUnsupported},
+		"github hash mismatch":      {ghEntry(func(c *Candidate) { c.GitHub.ContentHash = strings.Repeat("b", 64) }), BlockedUnsupported},
+		"github traversal path":     {ghEntry(func(c *Candidate) { c.GitHub.Path = "skills/../secret" }), BlockedUnsupported},
+		"github missing object":     {ghEntry(func(c *Candidate) { c.GitHub = nil }), BlockedUnsupported},
+		"github three-segment repo": {ghEntry(func(c *Candidate) { c.GitHub.Repo = "owner/repo/extra" }), BlockedUnsupported},
 	} {
-		if _, blocked := tc.e.HostedCandidate(); blocked != tc.want {
+		if _, blocked := tc.e.InstallCandidate(); blocked != tc.want {
 			t.Errorf("%s: blocked = %q, want %q", name, blocked, tc.want)
 		}
 	}

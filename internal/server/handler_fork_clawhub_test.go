@@ -4,12 +4,15 @@ package server
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -19,9 +22,35 @@ import (
 	"skillshare/internal/install"
 )
 
-const clawhubTestdata = "../forkmarket/clawhub/testdata"
+const (
+	clawhubTestdata   = "../forkmarket/clawhub/testdata"
+	fakeGitHubRepo    = "aws/agent-toolkit-for-aws"
+	fakeGitHubPath    = "plugins/aws-agents/skills/agents-build"
+	fakeGitHubCommit  = "b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c"
+	fakeGitHubTreeSHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	oldFeedGitHubHash = "d79709bf46ca8cd0fffe392a914cd56539b4b7c0ff0fe34c9583f24057300195"
+)
 
-// fakeClawHubSite serves the sample feed and the real blogwatcher archive over local TLS.
+var fakeGitHubFiles = map[string]string{
+	"SKILL.md":            "---\nname: agents-build\n---\n# Agents Build\n",
+	"references/guide.md": "guide\n",
+}
+
+func fakeGitBlobSHA(content string) string {
+	h := sha1.New()
+	h.Write([]byte("blob " + strconv.Itoa(len(content)) + "\x00" + content))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func fakeGitHubFeedHash() string {
+	return clawhub.FolderHash([]clawhub.FolderFile{
+		{Path: "SKILL.md", Data: []byte(fakeGitHubFiles["SKILL.md"])},
+		{Path: "references/guide.md", Data: []byte(fakeGitHubFiles["references/guide.md"])},
+	})
+}
+
+// fakeClawHubSite serves the sample feed, the real blogwatcher archive, and a GitHub folder
+// over local TLS.
 type fakeClawHubSite struct {
 	feed      atomic.Value // []byte
 	feedFails atomic.Bool
@@ -44,22 +73,44 @@ func useFakeClawHub(t *testing.T) *fakeClawHubSite {
 	}
 	site := &fakeClawHubSite{cacheDir: t.TempDir(), storeDir: t.TempDir()}
 	site.feed.Store(feed)
+	ghTreePath := "/repos/" + fakeGitHubRepo + "/git/trees/" + fakeGitHubCommit + ":" + fakeGitHubPath
+	ghRawPrefix := "/" + fakeGitHubRepo + "/" + fakeGitHubCommit + "/" + fakeGitHubPath + "/"
+	treeEntries := []map[string]any{
+		{"path": "SKILL.md", "mode": "100644", "type": "blob", "sha": fakeGitBlobSHA(fakeGitHubFiles["SKILL.md"]), "size": len(fakeGitHubFiles["SKILL.md"])},
+		{"path": "references", "mode": "040000", "type": "tree", "sha": strings.Repeat("c", 40)},
+		{"path": "references/guide.md", "mode": "100644", "type": "blob", "sha": fakeGitBlobSHA(fakeGitHubFiles["references/guide.md"]), "size": len(fakeGitHubFiles["references/guide.md"])},
+	}
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/v1/feeds/skills":
+		switch {
+		case r.URL.Path == "/v1/feeds/skills":
 			site.feedHits.Add(1)
 			if site.feedFails.Load() {
 				http.Error(w, "down", http.StatusServiceUnavailable)
 				return
 			}
 			w.Write(site.feed.Load().([]byte))
-		case "/.well-known/clawhub.json":
+		case r.URL.Path == "/.well-known/clawhub.json":
 			w.Write([]byte(`{"apiBase":"https://` + r.Host + `"}`))
-		case "/api/v1/download":
+		case r.URL.Path == "/api/v1/download":
 			site.downloads.Add(1)
 			site.query.Store(r.URL.RawQuery)
 			w.Header().Set("Content-Type", "application/zip")
 			w.Write(archive)
+		case r.URL.Path == ghTreePath:
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{
+				"sha":       fakeGitHubTreeSHA,
+				"truncated": false,
+				"tree":      treeEntries,
+			})
+		case strings.HasPrefix(r.URL.Path, ghRawPrefix):
+			rel := strings.TrimPrefix(r.URL.Path, ghRawPrefix)
+			body, ok := fakeGitHubFiles[rel]
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+			w.Write([]byte(body))
 		default:
 			http.NotFound(w, r)
 		}
@@ -69,6 +120,7 @@ func useFakeClawHub(t *testing.T) *fakeClawHubSite {
 	newClawHubClient = func() *clawhub.Client {
 		c := clawhub.New(site.cacheDir, site.storeDir)
 		c.HTTP, c.Registry = srv.Client(), srv.URL
+		c.GitHubAPI, c.GitHubRaw = srv.URL, srv.URL
 		c.Now = func() time.Time { return time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC) }
 		return c
 	}
@@ -242,7 +294,6 @@ func TestClawHubInstall_RefusedRequests(t *testing.T) {
 	}{
 		"bad id":          {map[string]any{"id": "../etc"}, http.StatusBadRequest, ""},
 		"not in feed":     {map[string]any{"id": "@nobody/nothing"}, http.StatusNotFound, "clawhub_not_found"},
-		"github-backed":   {map[string]any{"id": "@aws/agents-build"}, http.StatusUnprocessableEntity, "clawhub_not_installable"},
 		"version changed": {map[string]any{"id": "@steipete/blogwatcher", "version": "0.9.0"}, http.StatusConflict, "clawhub_version_changed"},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -286,5 +337,136 @@ func TestClawHubInstall_FailedInstallRemovesOnlyANewReleaseCopy(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(release, "SKILL.md")); err != nil {
 		t.Fatalf("earlier release copy removed: %v", err)
+	}
+}
+
+func TestClawHubInstall_GitHubEntryIsVerifiedThenInstalledPinned(t *testing.T) {
+	site := useFakeClawHub(t)
+	feed := site.feed.Load().([]byte)
+	site.feed.Store(bytes.ReplaceAll(feed, []byte(oldFeedGitHubHash), []byte(fakeGitHubFeedHash())))
+	s, sourceDir := newTestServer(t)
+
+	prev := installClawHubRelease
+	t.Cleanup(func() { installClawHubRelease = prev })
+	installClawHubRelease = func(source *install.Source, dest string, opts install.InstallOptions) (*install.InstallResult, error) {
+		if source.Type != install.SourceTypeGitHub {
+			t.Errorf("source.Type = %v, want GitHub", source.Type)
+		}
+		if source.CloneURL != "https://github.com/"+fakeGitHubRepo+".git" {
+			t.Errorf("source.CloneURL = %q", source.CloneURL)
+		}
+		if source.Subdir != fakeGitHubPath {
+			t.Errorf("source.Subdir = %q", source.Subdir)
+		}
+		if source.Branch != fakeGitHubCommit {
+			t.Errorf("source.Branch = %q", source.Branch)
+		}
+		if source.Name != "agents-build" {
+			t.Errorf("source.Name = %q", source.Name)
+		}
+		if err := os.MkdirAll(dest, 0o755); err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(filepath.Join(dest, "SKILL.md"), []byte(fakeGitHubFiles["SKILL.md"]), 0o644); err != nil {
+			return nil, err
+		}
+		st := install.LoadMetadataOrNew(opts.SourceDir)
+		st.Set("agents-build", &install.MetadataEntry{
+			Source:   source.Raw,
+			Type:     "github",
+			Branch:   source.Branch,
+			TreeHash: fakeGitHubTreeSHA,
+			Subdir:   source.Subdir,
+		})
+		if err := st.Save(opts.SourceDir); err != nil {
+			return nil, err
+		}
+		return &install.InstallResult{SkillName: "agents-build", Action: "installed"}, nil
+	}
+
+	rr := clawhubInstall(t, s, map[string]any{"id": "@aws/agents-build"})
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+	var resp struct {
+		SkillName string `json:"skillName"`
+		Action    string `json:"action"`
+		Origin    string `json:"origin"`
+		Version   string `json:"version"`
+		GitHub    string `json:"github"`
+	}
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.Version != fakeGitHubCommit || resp.Origin != "clawhub://@aws/agents-build@"+fakeGitHubCommit {
+		t.Errorf("resp = %+v", resp)
+	}
+	if _, err := os.Stat(filepath.Join(sourceDir, "agents-build", "SKILL.md")); err != nil {
+		t.Fatalf("SKILL.md missing: %v", err)
+	}
+}
+
+func TestClawHubInstall_GitHubHashMismatchInstallsNothing(t *testing.T) {
+	site := useFakeClawHub(t)
+	feed := site.feed.Load().([]byte)
+	site.feed.Store(bytes.ReplaceAll(feed, []byte(oldFeedGitHubHash), []byte(strings.Repeat("0", 64))))
+	s, _ := newTestServer(t)
+
+	prev := installClawHubRelease
+	t.Cleanup(func() { installClawHubRelease = prev })
+	called := false
+	installClawHubRelease = func(*install.Source, string, install.InstallOptions) (*install.InstallResult, error) {
+		called = true
+		return nil, errors.New("should not be called")
+	}
+
+	rr := clawhubInstall(t, s, map[string]any{"id": "@aws/agents-build"})
+	if rr.Code != http.StatusBadGateway || clawhubErrorCode(t, rr) != "clawhub_integrity_mismatch" {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+	if called {
+		t.Fatal("installClawHubRelease was called despite content hash mismatch")
+	}
+}
+
+func TestClawHubInstall_GitHubInstalledTreeMustMatch(t *testing.T) {
+	site := useFakeClawHub(t)
+	feed := site.feed.Load().([]byte)
+	site.feed.Store(bytes.ReplaceAll(feed, []byte(oldFeedGitHubHash), []byte(fakeGitHubFeedHash())))
+	s, sourceDir := newTestServer(t)
+
+	prev := installClawHubRelease
+	t.Cleanup(func() { installClawHubRelease = prev })
+	installClawHubRelease = func(source *install.Source, dest string, opts install.InstallOptions) (*install.InstallResult, error) {
+		if err := os.MkdirAll(dest, 0o755); err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(filepath.Join(dest, "SKILL.md"), []byte(fakeGitHubFiles["SKILL.md"]), 0o644); err != nil {
+			return nil, err
+		}
+		st := install.LoadMetadataOrNew(opts.SourceDir)
+		st.Set("agents-build", &install.MetadataEntry{
+			Source:   source.Raw,
+			Type:     "github",
+			Branch:   source.Branch,
+			TreeHash: strings.Repeat("b", 40),
+			Subdir:   source.Subdir,
+		})
+		if err := st.Save(opts.SourceDir); err != nil {
+			return nil, err
+		}
+		return &install.InstallResult{SkillName: "agents-build", Action: "installed"}, nil
+	}
+
+	rr := clawhubInstall(t, s, map[string]any{"id": "@aws/agents-build"})
+	if rr.Code != http.StatusBadGateway || clawhubErrorCode(t, rr) != "clawhub_integrity_mismatch" {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+	dest := filepath.Join(sourceDir, "agents-build")
+	if _, err := os.Stat(dest); !os.IsNotExist(err) {
+		t.Fatalf("mismatched installed folder was not removed (err=%v)", err)
+	}
+	if install.LoadMetadataOrNew(sourceDir).GetByPath("agents-build") != nil {
+		t.Fatal("metadata entry was left behind after tree mismatch")
 	}
 }

@@ -15,8 +15,6 @@ type NotInstallableError struct{ Reason string }
 
 func (e *NotInstallableError) Error() string {
 	switch e.Reason {
-	case BlockedGitHub:
-		return "this skill is hosted on GitHub; installing it from the ClawHub list is not supported yet"
 	case BlockedIntegrity:
 		return ErrNoIntegrity.Error()
 	case BlockedUnavailable:
@@ -84,9 +82,12 @@ func (c *Client) ReleaseDir(owner, slug, version string) string {
 // entries, and unpacks it into a staging folder beside its release folder. Nothing is written
 // unless every check passes.
 func (c *Client) Fetch(ctx context.Context, snap *Snapshot, e Entry) (*Release, error) {
-	cand, blocked := e.HostedCandidate()
+	cand, blocked := e.InstallCandidate()
 	if blocked != "" {
 		return nil, &NotInstallableError{Reason: blocked}
+	}
+	if cand.SourceRef != sourceHosted {
+		return nil, &NotInstallableError{Reason: BlockedUnsupported}
 	}
 	owner, slug, _ := ParseID(e.ID)
 	data, err := c.Download(ctx, snap.APIBase, owner, slug, cand.Version)

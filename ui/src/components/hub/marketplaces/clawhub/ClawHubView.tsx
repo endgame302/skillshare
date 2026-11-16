@@ -1,4 +1,4 @@
-// Fork-only (endgame302/skillshare): browse ClawHub's skills feed and install a hosted skill.
+// Fork-only (endgame302/skillshare): browse ClawHub's skills feed and install a skill.
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Github, RefreshCw, Search, ShieldCheck, Star } from 'lucide-react';
@@ -68,7 +68,10 @@ export default function ClawHubView() {
     });
     try {
       const res = await forkClawhub.install(item.id, item.version, force);
-      toast(t('clawhub.toast.installed', { name: res.skillName, version: res.version }), 'success');
+      const msg = item.source === 'github'
+        ? t('clawhub.toast.installedGitHub', { name: res.skillName, commit: res.version.slice(0, 7) })
+        : t('clawhub.toast.installed', { name: res.skillName, version: res.version });
+      toast(msg, 'success');
       for (const w of res.warnings ?? []) toast(w, 'warning');
       void invalidate(queryClient, 'skillsChanged');
     } catch (e) {
@@ -167,7 +170,7 @@ export default function ClawHubView() {
           </div>
           {shown.slice(0, limit).map((it) => {
             const have = installed.get(it.id);
-            const version = it.source === 'github' && it.github && !it.installable ? it.github.commit.slice(0, 7) : it.version;
+            const version = it.source === 'github' && it.github ? it.github.commit.slice(0, 7) : it.version;
             return (
               <div key={it.id} className="ss-r flex-wrap @md:flex-nowrap">
                 <span className="flex min-w-0 flex-1 basis-full flex-col gap-0.5 @md:basis-0">
@@ -177,6 +180,7 @@ export default function ClawHubView() {
                     </button>
                     {it.featured && <span className="ss-tag inf shrink-0"><Star size={11} aria-hidden="true" />{t('clawhub.featured')}</span>}
                     {it.trust && <span className="ss-tag ok shrink-0" title={t('clawhub.trust.hint')}><ShieldCheck size={11} aria-hidden="true" />{trustLabel(t, it.trust)}</span>}
+                    {it.source === 'github' && <span className="ss-tag shrink-0"><Github size={11} aria-hidden="true" />{t('clawhub.onGitHub')}</span>}
                   </span>
                   <span className="truncate font-mono text-[11.5px] text-ink-3">
                     {it.id}
@@ -188,13 +192,7 @@ export default function ClawHubView() {
                 <span className="hidden w-[110px] shrink-0 truncate font-mono text-[12px] text-ink-2 @xl:block">{version}</span>
                 <span className="ml-auto flex w-[104px] shrink-0 justify-end">
                   {!it.installable ? (
-                    it.blocked === 'github' ? (
-                      <button type="button" className="ss-tag" onClick={() => setOpenID(it.id)}>
-                        <Github size={11} aria-hidden="true" />{t('clawhub.onGitHub')}
-                      </button>
-                    ) : (
-                      <span className="ss-st off">{t('clawhub.notInstallable')}</span>
-                    )
+                    <span className="ss-st off">{t('clawhub.notInstallable')}</span>
                   ) : have === it.version ? (
                     <span className="ss-st ok">{t('hubs.browse.installed')}</span>
                   ) : (
@@ -234,7 +232,9 @@ export default function ClawHubView() {
         open={replace !== null}
         variant="danger"
         title={t('clawhub.replace.title', { name: replace?.slug ?? '' })}
-        message={t('clawhub.replace.message', { name: replace?.slug ?? '', id: replace?.id ?? '', version: replace?.version ?? '' })}
+        message={replace?.source === 'github'
+          ? t('clawhub.replace.messageGitHub', { name: replace.slug, id: replace.id, commit: (replace.github?.commit ?? replace.version).slice(0, 7) })
+          : t('clawhub.replace.message', { name: replace?.slug ?? '', id: replace?.id ?? '', version: replace?.version ?? '' })}
         confirmText={t('clawhub.replace.confirm')}
         loading={replace !== null && installing === replace.id}
         onCancel={() => setReplace(null)}

@@ -30,11 +30,15 @@ export default function ClawHubDetails({ item, registry, installedVersion, insta
     )],
     [t('clawhub.details.version'), (
       <span className="inline-flex items-center gap-2">
-        <span className="font-mono">{gh && !item.installable ? gh.commit.slice(0, 12) : item.version}</span>
-        {installedVersion && <span className="ss-st ok">{t('clawhub.details.installedVersion', { version: installedVersion })}</span>}
+        <span className="font-mono">{gh ? gh.commit.slice(0, 12) : item.version}</span>
+        {installedVersion && (
+          <span className="ss-st ok">
+            {t('clawhub.details.installedVersion', { version: gh ? installedVersion.slice(0, 12) : installedVersion })}
+          </span>
+        )}
       </span>
     )],
-    [t('clawhub.details.source'), gh && !item.installable ? (
+    [t('clawhub.details.source'), gh ? (
       <a href={ghURL} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1.5 hover:underline">
         <Github size={13} className="shrink-0" aria-hidden="true" />
         <span className="truncate font-mono">{gh.repo}/{gh.path}</span>
@@ -65,6 +69,9 @@ export default function ClawHubDetails({ item, registry, installedVersion, insta
             </div>
           ))}
         </dl>
+        {item.installable && gh && (
+          <div className="ss-note inf"><span className="flex-1">{t('clawhub.details.githubNote', { commit: gh.commit.slice(0, 12) })}</span></div>
+        )}
         <div className="ss-note warn"><span className="flex-1">{t('clawhub.thirdParty')}</span></div>
         {!item.installable && item.blocked && <div className="ss-note inf"><span className="flex-1">{t(blockedKey[item.blocked])}</span></div>}
         {error && <div role="alert" className="ss-note bad"><span className="flex-1 break-words">{error}</span></div>}
@@ -73,7 +80,7 @@ export default function ClawHubDetails({ item, registry, installedVersion, insta
         <a href={page} target="_blank" rel="noopener noreferrer" className="ss-btn ghost mr-auto inline-flex items-center gap-1.5">
           {t('clawhub.details.openClawHub')}<ExternalLink size={12} aria-hidden="true" />
         </a>
-        {gh && !item.installable && (
+        {gh && (
           <a href={ghURL} target="_blank" rel="noopener noreferrer" className="ss-btn inline-flex items-center gap-1.5">
             <Github size={13} aria-hidden="true" />{t('clawhub.details.openGitHub')}
           </a>

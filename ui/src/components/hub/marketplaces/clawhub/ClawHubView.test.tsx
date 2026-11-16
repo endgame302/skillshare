@@ -27,13 +27,15 @@ const item = (id: string, extra: Partial<ClawHubItem> = {}): ClawHubItem => {
   };
 };
 
+const awsCommit = 'b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c';
+
 const feed: ClawHubFeed = {
   items: [
     item('@steipete/blogwatcher', { title: 'Blogwatcher' }),
     item('@steipete/gog', { title: 'Gog', featured: true }),
     item('@aws/agents-build', {
-      title: 'agents-build', source: 'github', installable: false, blocked: 'github', integrity: undefined,
-      github: { repo: 'aws/agent-toolkit-for-aws', path: 'plugins/aws-agents/skills/agents-build', commit: 'b4416dddac9b6a0cc5412136e6dbf8f07ffdb31c', contentHash: 'x' },
+      title: 'agents-build', source: 'github', version: awsCommit, installable: true, integrity: 'sha256:' + 'b'.repeat(64),
+      github: { repo: 'aws/agent-toolkit-for-aws', path: 'plugins/aws-agents/skills/agents-build', commit: awsCommit, contentHash: 'x' },
     }),
   ],
   generatedAt: '2026-11-15T00:42:19.926Z',
@@ -70,8 +72,9 @@ it('installs the version the list shows, without forcing', async () => {
   renderView();
 
   await screen.findByRole('button', { name: 'Blogwatcher' });
-  // A GitHub-backed entry offers no install.
-  expect(within(row('agents-build')).queryByRole('button', { name: 'Install' })).toBeNull();
+  const awsRow = row('agents-build');
+  expect(within(awsRow).getByText('On GitHub')).toBeInTheDocument();
+  expect(within(awsRow).getByRole('button', { name: 'Install' })).toBeInTheDocument();
 
   await user.type(screen.getByRole('textbox', { name: 'Filter skills' }), 'blog');
   expect(screen.queryByRole('button', { name: 'Gog' })).toBeNull();
@@ -79,6 +82,40 @@ it('installs the version the list shows, without forcing', async () => {
 
   await waitFor(() => expect(forkClawhub.install).toHaveBeenCalledTimes(1));
   expect(forkClawhub.install).toHaveBeenCalledWith('@steipete/blogwatcher', '1.0.0', false);
+});
+
+it('installs a GitHub-hosted entry at its pinned commit and shows a commit toast', async () => {
+  vi.mocked(forkClawhub.install).mockResolvedValue({
+    skillName: 'agents-build',
+    action: 'cloned',
+    origin: `clawhub://@aws/agents-build@${awsCommit}`,
+    version: awsCommit,
+    github: 'github.com/aws/agent-toolkit-for-aws/plugins/aws-agents/skills/agents-build',
+  });
+  const user = userEvent.setup();
+  renderView();
+
+  await screen.findByRole('button', { name: 'agents-build' });
+  await user.click(within(row('agents-build')).getByRole('button', { name: 'Install' }));
+
+  await waitFor(() => expect(forkClawhub.install).toHaveBeenCalledWith('@aws/agents-build', awsCommit, false));
+  expect(await screen.findByText('Installed agents-build from GitHub at commit b4416dd')).toBeInTheDocument();
+});
+
+it('recognises a GitHub-hosted entry as installed by its source and commit branch', async () => {
+  vi.mocked(api.listSkills).mockResolvedValue({
+    resources: [{
+      name: 'agents-build',
+      source: 'github.com/aws/agent-toolkit-for-aws/plugins/aws-agents/skills/agents-build',
+      branch: awsCommit,
+    }] as unknown as Awaited<ReturnType<typeof api.listSkills>>['resources'],
+  });
+  renderView();
+
+  await screen.findByRole('button', { name: 'agents-build' });
+  const awsRow = row('agents-build');
+  expect(await within(awsRow).findByText('Installed')).toBeInTheDocument();
+  expect(within(awsRow).queryByRole('button', { name: 'Install' })).toBeNull();
 });
 
 it('asks before replacing a skill of the same name, and replaces only on confirm', async () => {

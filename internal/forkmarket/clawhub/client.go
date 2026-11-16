@@ -17,10 +17,12 @@ import (
 const (
 	// DefaultRegistry is ClawHub's site; its robots.txt allows the feed and disallows /api/,
 	// which is only used for a download the user asked for.
-	DefaultRegistry = "https://clawhub.ai"
-	feedPath        = "/v1/feeds/skills"
-	wellKnownPath   = "/.well-known/clawhub.json"
-	downloadPath    = "/api/v1/download"
+	DefaultRegistry  = "https://clawhub.ai"
+	DefaultGitHubAPI = "https://api.github.com"
+	DefaultGitHubRaw = "https://raw.githubusercontent.com"
+	feedPath         = "/v1/feeds/skills"
+	wellKnownPath    = "/.well-known/clawhub.json"
+	downloadPath     = "/api/v1/download"
 
 	userAgent       = "skillshare"
 	maxFeedBytes    = 8 << 20
@@ -36,11 +38,13 @@ const (
 
 // Client fetches ClawHub's feed, keeps it on disk until it expires, and downloads archives.
 type Client struct {
-	HTTP     *http.Client
-	Registry string // site root: the feed and .well-known/clawhub.json live here
-	CacheDir string // where the feed is kept
-	StoreDir string // where verified releases are kept; see Release.Dir
-	Now      func() time.Time
+	HTTP      *http.Client
+	Registry  string // site root: the feed and .well-known/clawhub.json live here
+	GitHubAPI string // https://api.github.com
+	GitHubRaw string // https://raw.githubusercontent.com
+	CacheDir  string // where the feed is kept
+	StoreDir  string // where verified releases are kept; see Release.Dir
+	Now       func() time.Time
 }
 
 // New returns a client for clawhub.ai that caches the feed under cacheDir and keeps releases
@@ -56,10 +60,12 @@ func New(cacheDir, storeDir string) *Client {
 			}
 			return nil
 		}},
-		Registry: DefaultRegistry,
-		CacheDir: cacheDir,
-		StoreDir: storeDir,
-		Now:      time.Now,
+		Registry:  DefaultRegistry,
+		GitHubAPI: DefaultGitHubAPI,
+		GitHubRaw: DefaultGitHubRaw,
+		CacheDir:  cacheDir,
+		StoreDir:  storeDir,
+		Now:       time.Now,
 	}
 }
 
@@ -156,12 +162,19 @@ func (c *Client) writeCache(snap *Snapshot, raw []byte) {
 }
 
 func (c *Client) get(ctx context.Context, rawURL, accept string, limit int64) (*http.Response, []byte, error) {
+	return c.getWithHeaders(ctx, rawURL, accept, nil, limit)
+}
+
+func (c *Client) getWithHeaders(ctx context.Context, rawURL, accept string, headers map[string]string, limit int64) (*http.Response, []byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", accept)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, nil, err
@@ -172,7 +185,7 @@ func (c *Client) get(ctx context.Context, rawURL, accept string, limit int64) (*
 		return resp, nil, err
 	}
 	if int64(len(body)) > limit {
-		return resp, nil, fmt.Errorf("ClawHub sent more than %d bytes", limit)
+		return resp, nil, fmt.Errorf("the response is larger than %d bytes", limit)
 	}
 	return resp, body, nil
 }

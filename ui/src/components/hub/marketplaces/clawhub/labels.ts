@@ -5,7 +5,6 @@ import type { ClawHubBlocked } from '../../../../api/forkClawhub';
 type T = (key: string, params?: Record<string, string | number>) => string;
 
 export const blockedKey: Record<ClawHubBlocked, string> = {
-  github: 'clawhub.blocked.github',
   unavailable: 'clawhub.blocked.unavailable',
   no_integrity: 'clawhub.blocked.noIntegrity',
   unsupported: 'clawhub.blocked.unsupported',
