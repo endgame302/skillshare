@@ -126,6 +126,10 @@ internal/forkmarket/clawhub/fetch.go	(*Release).Discard	os.RemoveAll	r.staging	c
 internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.RemoveAll	r.Dir	clone
 internal/forkmarket/clawhub/fetch.go	(*Release).Place	os.Rename	r.staging, r.Dir	clone
 internal/forkmarket/clawhub/fetch.go	pruneStaging	os.RemoveAll	filepath.Join(dir, d.Name())	clone
+internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.CreateTemp	c.CacheDir	config
+internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.MkdirAll	c.CacheDir	config
+internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.Remove	tmp.Name()	config
+internal/forkmarket/plugincat/catalog.go	(*Client).writeCache	os.Rename	tmp.Name(), c.cachePath(id)	config
 internal/git/info.go	resolveMetadataConflicts	os.WriteFile	filepath.Join(dir, path)	source-unmigrated
 internal/git/scope.go	DisableNestedRepo	os.Rename	gitDir, disabled	source-unmigrated
 internal/git/scope.go	InitScopeRepo	os.MkdirAll	dir	source-unmigrated
