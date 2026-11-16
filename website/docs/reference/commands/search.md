@@ -180,6 +180,8 @@ If you don't use `gh` CLI:
 
 This ensures high-quality, popular skills appear first.
 
+GitHub search keeps a cache in `~/.cache/skillshare/search/`: the same query returns its earlier results for 10 minutes, star counts are reused for 24 hours, and each `SKILL.md` description is kept for that version of the file. Delete the folder to force a fresh search.
+
 ## Community Hub
 
 Browse and install community-curated skills from [skillshare-hub](https://github.com/runkids/skillshare-hub):

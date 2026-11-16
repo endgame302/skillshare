@@ -69,6 +69,7 @@ Directory layout and file locations for skillshare.
 └── plugins/                 # Reviewed local copies of plugin sources
 
 ~/.cache/skillshare/         # XDG_CACHE_HOME      
+├── search/                  # GitHub search cache (results 10 min, stars 24h)
 ├── version-check.json       # Version check cache (24h TTL)
 └── ui/                      # Web UI dist cache
     └── 0.13.0/              # Per-version cached assets
@@ -495,6 +496,7 @@ See [Environment Variables](./environment-variables.md#xdg_config_home) for deta
 | Project registrations and locks | `~/.local/state/skillshare/projects/` |
 | Version cache | `~/.cache/skillshare/version-check.json` |
 | UI cache | `~/.cache/skillshare/ui/{version}/` |
+| Search cache | `~/.cache/skillshare/search/` |
 | Link type | Symlinks |
 
 ### Windows
@@ -511,6 +513,7 @@ See [Environment Variables](./environment-variables.md#xdg_config_home) for deta
 | Project registrations and locks | `%LOCALAPPDATA%\skillshare\state\projects\` |
 | Version cache | `%AppData%\skillshare\version-check.json` |
 | UI cache | `%AppData%\skillshare\ui\{version}\` |
+| Search cache | `%AppData%\skillshare\search\` |
 | Link type | NTFS Junctions for folders; symlinks for single files (need Developer Mode, otherwise copied) |
 
 ## XDG Base Directory Layout
@@ -522,7 +525,7 @@ skillshare follows the [XDG Base Directory Specification](https://specifications
 | `XDG_CONFIG_HOME` | `~/.config` | `skillshare/config.yaml`, `skillshare/skills/` (includes `.metadata.json`), `skillshare/agents/` |
 | `XDG_DATA_HOME` | `~/.local/share` | `skillshare/backups/`, `skillshare/trash/` |
 | `XDG_STATE_HOME` | `~/.local/state` | `skillshare/logs/`, `skillshare/projects/` |
-| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/` (downloaded web dashboard) |
+| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/` (downloaded web dashboard), `skillshare/search/` (GitHub search cache) |
 
 ### Windows Paths
 

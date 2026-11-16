@@ -69,6 +69,7 @@ skillshare 的目录布局与文件位置。
 └── plugins/                 # 已审阅的插件来源本地副本
 
 ~/.cache/skillshare/         # XDG_CACHE_HOME      
+├── search/                  # GitHub 搜索缓存（结果 10 分钟，星标 24 小时）
 ├── version-check.json       # 版本检查缓存（24 小时 TTL）
 └── ui/                      # Web UI dist 缓存
     └── 0.13.0/              # 按版本缓存的资源
@@ -495,6 +496,7 @@ skillshare 遵循 XDG Base Directory Specification。可通过 `XDG_CONFIG_HOME`
 | 项目注册及锁 | `~/.local/state/skillshare/projects/` |
 | Version cache | `~/.cache/skillshare/version-check.json` |
 | UI cache | `~/.cache/skillshare/ui/{version}/` |
+| Search cache | `~/.cache/skillshare/search/` |
 | Link type | 符号链接（Symlinks） |
 
 ### Windows
@@ -511,6 +513,7 @@ skillshare 遵循 XDG Base Directory Specification。可通过 `XDG_CONFIG_HOME`
 | 项目注册及锁 | `%LOCALAPPDATA%\skillshare\state\projects\` |
 | Version cache | `%AppData%\skillshare\version-check.json` |
 | UI cache | `%AppData%\skillshare\ui\{version}\` |
+| Search cache | `%AppData%\skillshare\search\` |
 | Link type | 文件夹用 NTFS Junctions；单个文件用 symlinks（需要 Developer Mode，否则复制） |
 
 ## XDG Base Directory Layout
@@ -522,7 +525,7 @@ skillshare 在 Unix 系统上遵循 [XDG Base Directory Specification](https://s
 | `XDG_CONFIG_HOME` | `~/.config` | `skillshare/config.yaml`、`skillshare/skills/`（含 `.metadata.json`）、`skillshare/agents/` |
 | `XDG_DATA_HOME` | `~/.local/share` | `skillshare/backups/`、`skillshare/trash/` |
 | `XDG_STATE_HOME` | `~/.local/state` | `skillshare/logs/`, `skillshare/projects/` |
-| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（下载的 Web dashboard） |
+| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（下载的 Web dashboard）、`skillshare/search/`（GitHub 搜索缓存） |
 
 ### Windows Paths
 

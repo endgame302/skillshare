@@ -69,6 +69,7 @@ skillshare의 디렉터리 레이아웃과 파일 위치입니다.
 └── plugins/                 # 검토된 플러그인 Source 로컬 사본
 
 ~/.cache/skillshare/         # XDG_CACHE_HOME      
+├── search/                  # GitHub 검색 캐시 (결과 10분, 스타 24시간)
 ├── version-check.json       # 버전 확인 캐시 (TTL 24시간)
 └── ui/                      # 웹 UI dist 캐시
     └── 0.13.0/              # 버전별 캐시된 에셋
@@ -495,6 +496,7 @@ skillshare는 XDG Base Directory Specification을 따릅니다. `XDG_CONFIG_HOME
 | 프로젝트 등록 및 잠금 | `~/.local/state/skillshare/projects/` |
 | 버전 캐시 | `~/.cache/skillshare/version-check.json` |
 | UI 캐시 | `~/.cache/skillshare/ui/{version}/` |
+| 검색 캐시 | `~/.cache/skillshare/search/` |
 | 링크 유형 | 심볼릭 링크 |
 
 ### Windows
@@ -511,6 +513,7 @@ skillshare는 XDG Base Directory Specification을 따릅니다. `XDG_CONFIG_HOME
 | 프로젝트 등록 및 잠금 | `%LOCALAPPDATA%\skillshare\state\projects\` |
 | 버전 캐시 | `%AppData%\skillshare\version-check.json` |
 | UI 캐시 | `%AppData%\skillshare\ui\{version}\` |
+| 검색 캐시 | `%AppData%\skillshare\search\` |
 | 링크 유형 | 폴더는 NTFS Junction, 단일 파일은 symlink (Developer Mode 필요, 없으면 복사) |
 
 ## XDG Base Directory 레이아웃
@@ -522,7 +525,7 @@ skillshare는 Unix 시스템에서 [XDG Base Directory Specification](https://sp
 | `XDG_CONFIG_HOME` | `~/.config` | `skillshare/config.yaml`, `skillshare/skills/` (`.metadata.json` 포함), `skillshare/agents/` |
 | `XDG_DATA_HOME` | `~/.local/share` | `skillshare/backups/`, `skillshare/trash/` |
 | `XDG_STATE_HOME` | `~/.local/state` | `skillshare/logs/`, `skillshare/projects/` |
-| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/` (다운로드된 웹 대시보드) |
+| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/` (다운로드된 웹 대시보드), `skillshare/search/` (GitHub 검색 캐시) |
 
 ### Windows 경로
 

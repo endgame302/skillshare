@@ -69,6 +69,7 @@ skillshare のディレクトリレイアウトとファイルの場所です。
 └── plugins/                 # Reviewed local copies of plugin sources
 
 ~/.cache/skillshare/         # XDG_CACHE_HOME      
+├── search/                  # GitHub search cache (results 10 min, stars 24h)
 ├── version-check.json       # Version check cache (24h TTL)
 └── ui/                      # Web UI dist cache
     └── 0.13.0/              # Per-version cached assets
@@ -526,6 +527,7 @@ skillshare は XDG Base Directory Specification に従います。`XDG_CONFIG_HO
 | プロジェクト登録とロック | `~/.local/state/skillshare/projects/` |
 | Version cache | `~/.cache/skillshare/version-check.json` |
 | UI cache | `~/.cache/skillshare/ui/{version}/` |
+| Search cache | `~/.cache/skillshare/search/` |
 | リンクの種類 | シンボリックリンク |
 
 ### Windows
@@ -542,6 +544,7 @@ skillshare は XDG Base Directory Specification に従います。`XDG_CONFIG_HO
 | プロジェクト登録とロック | `%LOCALAPPDATA%\skillshare\state\projects\` |
 | Version cache | `%AppData%\skillshare\version-check.json` |
 | UI cache | `%AppData%\skillshare\ui\{version}\` |
+| Search cache | `%AppData%\skillshare\search\` |
 | リンクの種類 | フォルダーは NTFS Junctions、単一ファイルはシンボリックリンク（Developer Mode が必要、ない場合はコピー） |
 
 ## XDG Base Directory のレイアウト
@@ -554,7 +557,7 @@ skillshare は Unix システム上で [XDG Base Directory Specification](https:
 | `XDG_CONFIG_HOME` | `~/.config` | `skillshare/config.yaml`、`skillshare/skills/`（`.metadata.json` を含む）、`skillshare/agents/` |
 | `XDG_DATA_HOME` | `~/.local/share` | `skillshare/backups/`、`skillshare/trash/` |
 | `XDG_STATE_HOME` | `~/.local/state` | `skillshare/logs/`, `skillshare/projects/` |
-| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（ダウンロードされた Web ダッシュボード） |
+| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（ダウンロードされた Web ダッシュボード）、`skillshare/search/`（GitHub 検索キャッシュ） |
 
 ### Windows のパス
 

@@ -87,7 +87,7 @@ export XDG_STATE_HOME=~/my-state
 
 ### XDG_CACHE_HOME
 
-覆寫快取目錄（版本檢查快取、UI dist 快取）。
+覆寫快取目錄（版本檢查快取、UI dist 快取、GitHub 搜尋快取）。
 
 ```bash
 export XDG_CACHE_HOME=~/my-cache
@@ -502,7 +502,7 @@ export GITHUB_TOKEN="ghp_your_token_here"
 | `XDG_CONFIG_HOME` | 基礎設定目錄 | `~/.config`（Linux/macOS）、`%AppData%`（Windows） |
 | `XDG_DATA_HOME` | 資料目錄（backups、trash） | `~/.local/share` |
 | `XDG_STATE_HOME` | State 目錄（記錄、本機專案註冊及鎖定） | `~/.local/state` |
-| `XDG_CACHE_HOME` | 快取目錄（版本檢查、UI） | `~/.cache` |
+| `XDG_CACHE_HOME` | 快取目錄（版本檢查、UI、搜尋） | `~/.cache` |
 | `GITHUB_TOKEN` | GitHub API + git clone 驗證 | 無 |
 | `GH_TOKEN` | GitHub API（`GITHUB_TOKEN` 的備援） | 無 |
 | `GITLAB_TOKEN` | GitLab git clone 驗證 | 無 |
