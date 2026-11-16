@@ -201,7 +201,7 @@ skillshare install git@ssh.dev.azure.com:v3/org/project/repo
 ```
 
 :::tip 비공개 저장소
-HTTPS에서 인증 오류가 발생하면 SSH URL로 전환하세요. skillshare는 자격 증명 프롬프트가 멈추는 것을 방지하기 위해 `GIT_TERMINAL_PROMPT=0`을 설정하므로, 대화형 HTTPS 인증은 작동하지 않습니다.
+HTTPS에서 인증 오류가 발생하면 SSH URL로 전환하세요. skillshare는 자격 증명 프롬프트가 멈추는 것을 방지하기 위해 `GIT_TERMINAL_PROMPT=0`을 설정하므로, 대화형 HTTPS 인증은 작동하지 않습니다. 웹 대시보드와 터미널이 없는 실행에서는 `GCM_INTERACTIVE=never`도 설정하므로, Git Credential Manager는 저장된 자격 증명만 사용하고 아무도 보지 못하는 로그인 프롬프트에서 기다리지 않고 바로 실패합니다.
 :::
 
 ## 커스텀 GitLab 도메인 {#custom-gitlab-domains}

@@ -118,7 +118,8 @@ func WrapGitError(stderr string, err error, tokenAuthAttempted bool) error {
 		if tokenAuthAttempted {
 			return fmt.Errorf("authentication failed — token rejected, check permissions and expiry\n       %s", s)
 		}
-		return fmt.Errorf("authentication required — options:\n"+
+		// GitHub answers for a missing repository as it does for a private one.
+		return fmt.Errorf("authentication required — the repository may be missing or private; options:\n"+
 			"       1. SSH URL: git@<host>:<owner>/<repo>.git\n"+
 			"       2. Token env var: GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN, AZURE_DEVOPS_TOKEN, CNB_TOKEN, GITEA_TOKEN, or SKILLSHARE_GIT_TOKEN\n"+
 			"       3. Git credential helper: gh auth login\n       %s", s)

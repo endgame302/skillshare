@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"skillshare/internal/config"
+	"skillshare/internal/gitenv"
 	"skillshare/internal/install"
 	"skillshare/internal/sourcewalk"
 	"skillshare/internal/version"
@@ -428,6 +429,9 @@ func (s *Server) SetOnReady(fn func()) {
 // StartWithContext starts the HTTP server and shuts down gracefully when ctx is cancelled.
 func (s *Server) StartWithContext(ctx context.Context) error {
 	s.startTime = time.Now()
+	// Requests come from the browser, so a git credential prompt would wait
+	// in the terminal that started the server, or in a window nobody sees.
+	gitenv.DisablePrompts()
 
 	// Bind the port first so callers know immediately if it's in use.
 	ln, err := net.Listen("tcp", s.addr)

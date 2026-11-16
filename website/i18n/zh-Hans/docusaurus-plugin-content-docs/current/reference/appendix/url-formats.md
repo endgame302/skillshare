@@ -201,7 +201,7 @@ skillshare install git@ssh.dev.azure.com:v3/org/project/repo
 ```
 
 :::tip Private Repos
-如果 HTTPS 出现认证错误，请改用 SSH URL。skillshare 会设置 `GIT_TERMINAL_PROMPT=0` 以防止凭证提示挂起，因此交互式 HTTPS 认证无法使用。
+如果 HTTPS 出现认证错误，请改用 SSH URL。skillshare 会设置 `GIT_TERMINAL_PROMPT=0` 以防止凭证提示挂起，因此交互式 HTTPS 认证无法使用。在 Web 仪表板中以及没有终端的运行中，它还会设置 `GCM_INTERACTIVE=never`，让 Git Credential Manager 只使用已保存的凭证并立即失败，而不是等待一个没人看得到的登录提示。
 :::
 
 ## Custom GitLab Domains {#custom-gitlab-domains}

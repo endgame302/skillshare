@@ -207,7 +207,8 @@ skillshare install git@ssh.dev.azure.com:v3/org/project/repo
 :::tip プライベートリポジトリ
 HTTPS で認証エラーが出る場合は、SSH URL に切り替えてください。skillshare はハングする認証情報の
 プロンプトを防ぐために `GIT_TERMINAL_PROMPT=0` を設定するため、インタラクティブな HTTPS 認証は
-機能しません。
+機能しません。Web ダッシュボードとターミナルのない実行では `GCM_INTERACTIVE=never` も設定するため、Git Credential
+Manager は保存済みの認証情報だけを使い、誰にも見えないログインプロンプトで待たずにすぐ失敗します。
 :::
 
 ## カスタム GitLab ドメイン {#custom-gitlab-domains}

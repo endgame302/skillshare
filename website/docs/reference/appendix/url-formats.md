@@ -201,7 +201,7 @@ skillshare install git@ssh.dev.azure.com:v3/org/project/repo
 ```
 
 :::tip Private Repos
-If you get an authentication error with HTTPS, switch to SSH URLs. skillshare sets `GIT_TERMINAL_PROMPT=0` to prevent hanging credential prompts, so interactive HTTPS auth won't work.
+If you get an authentication error with HTTPS, switch to SSH URLs. skillshare sets `GIT_TERMINAL_PROMPT=0` to prevent hanging credential prompts, so interactive HTTPS auth won't work. In the web dashboard, and in runs without a terminal, it also sets `GCM_INTERACTIVE=never`, so Git Credential Manager uses stored credentials and fails at once instead of waiting on a login prompt nobody sees.
 :::
 
 ## Custom GitLab Domains {#custom-gitlab-domains}

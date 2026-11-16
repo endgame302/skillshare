@@ -523,6 +523,12 @@ func TestWrapGitError(t *testing.T) {
 			wantSubstr: "authentication required",
 		},
 		{
+			name:       "auth required names a missing or private repo",
+			stderr:     "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+			err:        errors.New("exit status 128"),
+			wantSubstr: "may be missing or private",
+		},
+		{
 			name:       "auth failed with token — token rejected",
 			stderr:     "fatal: Authentication failed for 'https://github.com/org/repo.git/'",
 			err:        errors.New("exit status 128"),
