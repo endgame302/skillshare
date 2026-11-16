@@ -740,6 +740,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("PUT /api/agentignore", s.handlePutAgentignore)
 
 	s.registerForkClawHubRoutes() // fork-only (endgame302/skillshare): ClawHub marketplace
+	s.registerForkAgentsRoutes()  // fork-only (endgame302/skillshare): agents marketplace
 
 	// SPA fallback — must be last
 	if s.uiDistDir != "" {

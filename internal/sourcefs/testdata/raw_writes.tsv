@@ -108,6 +108,10 @@ internal/config/save_candidate.go	(*SaveCandidate).write	os.MkdirAll	dir	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.OpenFile	tmpPath	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.Remove	tmp.Name()	config
 internal/config/save_candidate.go	(*SaveCandidate).write	os.Rename	tmp.Name(), dest	config
+internal/forkmarket/agentdir/agentdir.go	(*Client).writeCache	os.CreateTemp	c.CacheDir	config
+internal/forkmarket/agentdir/agentdir.go	(*Client).writeCache	os.MkdirAll	c.CacheDir	config
+internal/forkmarket/agentdir/agentdir.go	(*Client).writeCache	os.Remove	tmp.Name()	config
+internal/forkmarket/agentdir/agentdir.go	(*Client).writeCache	os.Rename	tmp.Name(), c.cachePath(source)	config
 internal/forkmarket/clawhub/archive.go	writeEntry	os.MkdirAll	filepath.Dir(target)	clone
 internal/forkmarket/clawhub/archive.go	writeEntry	os.MkdirAll	target	clone
 internal/forkmarket/clawhub/archive.go	writeEntry	os.OpenFile	target	clone
