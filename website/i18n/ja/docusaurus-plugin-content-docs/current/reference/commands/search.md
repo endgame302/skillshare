@@ -177,6 +177,8 @@ GitHub Code Search API には認証が必要です。skillshare は自動的に�
 
 これにより、高品質で人気のある Skill が先頭に表示されます。
 
+GitHub 検索は `~/.cache/skillshare/search/` にキャッシュを保持します。同じクエリは 10 分間前回の結果を返し、スター数は 24 時間再利用され、各 `SKILL.md` の説明はそのファイルのバージョンごとに保存されます。新しく検索し直すには、このフォルダを削除してください。
+
 ## コミュニティ Hub
 
 [skillshare-hub](https://github.com/runkids/skillshare-hub) からコミュニティがキュレーションした Skill を閲覧・インストールできます。

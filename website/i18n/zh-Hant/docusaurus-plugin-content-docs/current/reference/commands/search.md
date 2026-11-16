@@ -177,6 +177,8 @@ GitHub Code Search API 需要驗證。skillshare 會自動偵測你的憑證：
 
 這確保高品質、熱門的 skills 會優先出現。
 
+GitHub 搜尋會在 `~/.cache/skillshare/search/` 中保留快取：相同的查詢在 10 分鐘內會回傳先前的結果，星數會沿用 24 小時，每個 `SKILL.md` 的描述依檔案版本保存。刪除該資料夾即可強制重新搜尋。
+
 ## 社群 Hub
 
 從 [skillshare-hub](https://github.com/runkids/skillshare-hub) 瀏覽並安裝社群精選的 skills：

@@ -87,7 +87,7 @@ export XDG_STATE_HOME=~/my-state
 
 ### XDG_CACHE_HOME
 
-覆盖缓存目录（版本检查缓存、UI dist 缓存）。
+覆盖缓存目录（版本检查缓存、UI dist 缓存、GitHub 搜索缓存）。
 
 ```bash
 export XDG_CACHE_HOME=~/my-cache
@@ -502,7 +502,7 @@ export GITHUB_TOKEN="ghp_your_token_here"
 | `XDG_CONFIG_HOME` | 基础配置目录 | `~/.config`（Linux/macOS）、`%AppData%`（Windows） |
 | `XDG_DATA_HOME` | 数据目录（backups、trash） | `~/.local/share` |
 | `XDG_STATE_HOME` | 状态目录（日志、本机项目注册及锁） | `~/.local/state` |
-| `XDG_CACHE_HOME` | 缓存目录（版本检查、UI） | `~/.cache` |
+| `XDG_CACHE_HOME` | 缓存目录（版本检查、UI、搜索） | `~/.cache` |
 | `GITHUB_TOKEN` | GitHub API + git clone 认证 | 无 |
 | `GH_TOKEN` | GitHub API（`GITHUB_TOKEN` 的回退） | 无 |
 | `GITLAB_TOKEN` | GitLab git clone 认证 | 无 |

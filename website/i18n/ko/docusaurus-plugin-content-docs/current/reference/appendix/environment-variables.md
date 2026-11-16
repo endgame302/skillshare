@@ -87,7 +87,7 @@ export XDG_STATE_HOME=~/my-state
 
 ### XDG_CACHE_HOME
 
-캐시 디렉터리(버전 확인 캐시, UI dist 캐시)를 재정의합니다.
+캐시 디렉터리(버전 확인 캐시, UI dist 캐시, GitHub 검색 캐시)를 재정의합니다.
 
 ```bash
 export XDG_CACHE_HOME=~/my-cache
@@ -502,7 +502,7 @@ export GITHUB_TOKEN="ghp_your_token_here"
 | `XDG_CONFIG_HOME` | 기본 설정 디렉터리 | `~/.config` (Linux/macOS), `%AppData%` (Windows) |
 | `XDG_DATA_HOME` | 데이터 디렉터리 (백업, 휴지통) | `~/.local/share` |
 | `XDG_STATE_HOME` | 상태 디렉터리 (로그, 로컬 프로젝트 등록 및 잠금) | `~/.local/state` |
-| `XDG_CACHE_HOME` | 캐시 디렉터리 (버전 확인, UI) | `~/.cache` |
+| `XDG_CACHE_HOME` | 캐시 디렉터리 (버전 확인, UI, 검색) | `~/.cache` |
 | `GITHUB_TOKEN` | GitHub API + git clone 인증 | 없음 |
 | `GH_TOKEN` | GitHub API (`GITHUB_TOKEN`의 대체 값) | 없음 |
 | `GITLAB_TOKEN` | GitLab git clone 인증 | 없음 |

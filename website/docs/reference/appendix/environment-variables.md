@@ -92,7 +92,7 @@ When unset, project registrations and their locks default to `%LOCALAPPDATA%\ski
 
 ### XDG_CACHE_HOME
 
-Override the cache directory (version check cache, UI dist cache).
+Override the cache directory (version check cache, UI dist cache, GitHub search cache).
 
 ```bash
 export XDG_CACHE_HOME=~/my-cache
@@ -507,7 +507,7 @@ export GITHUB_TOKEN="ghp_your_token_here"
 | `XDG_CONFIG_HOME` | Base config directory | `~/.config` (Linux/macOS), `%AppData%` (Windows) |
 | `XDG_DATA_HOME` | Data directory (backups, trash) | `~/.local/share` |
 | `XDG_STATE_HOME` | State directory (logs, local project registrations and locks) | `~/.local/state` |
-| `XDG_CACHE_HOME` | Cache directory (version check, UI) | `~/.cache` |
+| `XDG_CACHE_HOME` | Cache directory (version check, UI, search) | `~/.cache` |
 | `GITHUB_TOKEN` | GitHub API + git clone auth | None |
 | `GH_TOKEN` | GitHub API (fallback for `GITHUB_TOKEN`) | None |
 | `GITLAB_TOKEN` | GitLab git clone auth | None |

@@ -311,6 +311,12 @@ internal/resource/agent.go	(AgentKind).CreateLink	os.Symlink	src, dst	target
 internal/resource/skill.go	(SkillKind).CreateLink	os.Symlink	src, dst	target
 internal/search/index.go	readIndexFromGitClone	os.RemoveAll	dir	tmp
 internal/search/preview.go	fetchViaClone	os.RemoveAll	dir	tmp
+internal/search/search_cache.go	writeSearchCacheFile	os.CreateTemp	dir	config
+internal/search/search_cache.go	writeSearchCacheFile	os.MkdirAll	dir	config
+internal/search/search_cache.go	writeSearchCacheFile	os.Remove	tmp.Name()	config
+internal/search/search_cache.go	writeSearchCacheFile	os.Remove	tmp.Name()	config
+internal/search/search_cache.go	writeSearchCacheFile	os.Remove	tmp.Name()	config
+internal/search/search_cache.go	writeSearchCacheFile	os.Rename	tmp.Name(), filepath.Join(dir, name)	config
 internal/server/handler_agentignore.go	(*Server).handlePutAgentignore	os.MkdirAll	resolved	agents
 internal/server/handler_agentignore.go	(*Server).handlePutAgentignore	os.Remove	ignorePath	agents
 internal/server/handler_agentignore.go	(*Server).handlePutAgentignore	os.WriteFile	ignorePath	agents

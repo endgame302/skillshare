@@ -19,6 +19,11 @@ import (
 	"skillshare/internal/validate"
 )
 
+var (
+	githubAPIBase = "https://api.github.com"
+	githubToken   = ghclient.GetToken
+)
+
 // SearchResult represents a skill found via search
 type SearchResult struct {
 	Name        string   // Skill name (from SKILL.md frontmatter or directory name)
@@ -33,6 +38,7 @@ type SearchResult struct {
 	RiskScore   *int     `json:"riskScore,omitempty"` // Audit risk score (0-100), nil if not audited
 	RiskLabel   string   `json:"riskLabel,omitempty"` // Audit risk label (clean/low/medium/high/critical)
 	Score       float64  `json:"-"`                   // Internal relevance score, hidden from JSON output
+	blobSHA     string
 }
 
 // RateLimitError indicates GitHub API rate limit was exceeded.
@@ -55,6 +61,7 @@ type gitHubSearchResponse struct {
 type gitHubCodeItem struct {
 	Name       string           `json:"name"`
 	Path       string           `json:"path"`
+	SHA        string           `json:"sha"`
 	Repository gitHubRepository `json:"repository"`
 }
 
@@ -85,6 +92,7 @@ type gitHubTreeResponse struct {
 type gitHubTreeItem struct {
 	Path string `json:"path"`
 	Type string `json:"type"`
+	SHA  string `json:"sha"`
 }
 
 type repoID struct {
@@ -92,10 +100,25 @@ type repoID struct {
 	repo  string
 }
 
+type skillMetaKey struct {
+	owner string
+	repo  string
+	path  string
+}
+
+type skillMetaTarget struct {
+	key     skillMetaKey
+	blobSHA string
+}
+
+// metadataGraphQLBatchSize is how many SKILL.md files one GraphQL request reads.
+const metadataGraphQLBatchSize = 15
+
 // gitHubContentResponse represents the GitHub contents API response
 type gitHubContentResponse struct {
 	Content  string `json:"content"`
 	Encoding string `json:"encoding"`
+	SHA      string `json:"sha"`
 }
 
 type skillMetadata struct {
@@ -113,31 +136,57 @@ var preferredSkillRepos = []string{
 // A single HTTP client is shared across all API calls for connection reuse.
 func Search(query string, limit int) ([]SearchResult, error) {
 	limit = normalizeLimit(limit)
+	if cached, ok := loadQueryCache(query); ok {
+		if len(cached) > limit {
+			cached = cached[:limit]
+		}
+		return cached, nil
+	}
+
 	client := ghclient.NewClient()
 	_, _, _, repoScopedQuery := parseRepoQuery(query)
 
-	searchResp, err := fetchCodeSearchResults(client, query)
+	searchResp, complete, err := fetchAllCandidateResults(client, query, repoScopedQuery)
 	if err != nil {
 		return nil, err
 	}
-	if !repoScopedQuery {
-		appendPreferredSkillRepoResults(client, searchResp, query)
-		appendRepositorySearchSkillResults(client, searchResp, query)
-	}
 
 	results := processSearchItems(searchResp.Items)
-	enrichWithStars(client, results)
-	sortByStars(results)
 
-	// Enrich top candidates with descriptions before scoring
-	metadataLimit := 30
 	if !repoScopedQuery {
-		metadataLimit = len(results)
-	}
-	results = enrichWithDescriptions(client, results, metadataLimit, !repoScopedQuery)
-	if !repoScopedQuery {
+		targets := make([]skillMetaTarget, len(results))
+		for i := range results {
+			targets[i] = skillMetaTarget{
+				key:     skillMetaKey{results[i].Owner, results[i].Repo, results[i].Path},
+				blobSHA: results[i].blobSHA,
+			}
+		}
+
+		var (
+			repoStars map[repoID]int
+			metaMap   map[skillMetaKey]skillMetadata
+			wg        sync.WaitGroup
+		)
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			repoStars = fetchStarsMap(client, results)
+		}()
+		go func() {
+			defer wg.Done()
+			metaMap = fetchSkillMetadataMap(client, targets)
+		}()
+		wg.Wait()
+
+		applyStars(results, repoStars)
+		sortByStars(results)
+		results = applySkillMetadata(results, len(results), metaMap, true)
 		results = dedupeEquivalentSkills(results)
 		results = filterLowQuality(results)
+	} else {
+		enrichWithStars(client, results)
+		sortByStars(results)
+		results = enrichWithDescriptions(client, results, 30, false)
 	}
 
 	// For repo-scoped queries, score by subdir keyword (or stars-only if no subdir)
@@ -147,11 +196,118 @@ func Search(query string, limit int) ([]SearchResult, error) {
 	}
 	scoreAndSort(results, scoringQuery)
 
+	// A side search that failed (often code search's per-minute limit) left
+	// results out; caching them would hide the full list on the next try.
+	if complete {
+		saveQueryCache(query, results)
+	}
+
 	if len(results) > limit {
 		results = results[:limit]
 	}
 
 	return results, nil
+}
+
+// fetchAllCandidateResults starts the main code search, preferred-repo code
+// searches, and repository+tree discovery in parallel, then merges items in
+// deterministic order once all requests finish. complete reports whether
+// every side search and tree fetch succeeded.
+func fetchAllCandidateResults(client *http.Client, query string, repoScopedQuery bool) (resp *gitHubSearchResponse, complete bool, err error) {
+	var (
+		mainResp      *gitHubSearchResponse
+		mainErr       error
+		repoSearchErr error
+		wg            sync.WaitGroup
+	)
+
+	preferredResps := make([]*gitHubSearchResponse, len(preferredSkillRepos))
+	preferredErrs := make([]error, len(preferredSkillRepos))
+	var (
+		repoTreeItems [][]gitHubCodeItem
+		repoTreeErrs  []error
+	)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		mainResp, mainErr = fetchCodeSearchResults(client, query)
+	}()
+
+	if !repoScopedQuery {
+		for i, repo := range preferredSkillRepos {
+			wg.Add(1)
+			go func(idx int, repoName string) {
+				defer wg.Done()
+				searchQuery := buildTrustedSkillRepoSearchQuery(query, repoName)
+				preferredResps[idx], preferredErrs[idx] = fetchCodeSearchResultsByQuery(client, searchQuery)
+			}(i, repo)
+		}
+
+		if strings.TrimSpace(query) != "" {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				repos, err := fetchRepositorySearchResults(client, query)
+				if err != nil {
+					repoSearchErr = err
+					return
+				}
+				if len(repos) == 0 {
+					return
+				}
+
+				repoTreeItems = make([][]gitHubCodeItem, len(repos))
+				repoTreeErrs = make([]error, len(repos))
+
+				const treeConcurrency = 8
+				sem := make(chan struct{}, treeConcurrency)
+				var treeWG sync.WaitGroup
+				for i, repo := range repos {
+					treeWG.Add(1)
+					go func(idx int, r gitHubRepositorySearchItem) {
+						defer treeWG.Done()
+						sem <- struct{}{}
+						defer func() { <-sem }()
+						repoTreeItems[idx], repoTreeErrs[idx] = fetchRepositorySkillTreeItems(client, r)
+					}(i, repo)
+				}
+				treeWG.Wait()
+			}()
+		}
+	}
+
+	wg.Wait()
+
+	if mainErr != nil {
+		return nil, false, mainErr
+	}
+
+	if !repoScopedQuery {
+		for i := range preferredSkillRepos {
+			if preferredErrs[i] != nil || preferredResps[i] == nil {
+				continue
+			}
+			mainResp.Items = append(mainResp.Items, preferredResps[i].Items...)
+			mainResp.TotalCount += preferredResps[i].TotalCount
+		}
+		for i := range repoTreeItems {
+			if repoTreeErrs[i] != nil {
+				continue
+			}
+			mainResp.Items = append(mainResp.Items, repoTreeItems[i]...)
+			mainResp.TotalCount += len(repoTreeItems[i])
+		}
+	}
+
+	complete = repoSearchErr == nil
+	for _, err := range preferredErrs {
+		complete = complete && err == nil
+	}
+	for _, err := range repoTreeErrs {
+		complete = complete && err == nil
+	}
+	return mainResp, complete, nil
 }
 
 // normalizeLimit ensures limit is within valid range
@@ -243,7 +399,8 @@ func fetchCodeSearchResults(client *http.Client, query string) (*gitHubSearchRes
 
 func fetchCodeSearchResultsByQuery(client *http.Client, searchQuery string) (*gitHubSearchResponse, error) {
 	apiURL := fmt.Sprintf(
-		"https://api.github.com/search/code?q=%s&per_page=%d",
+		"%s/search/code?q=%s&per_page=%d",
+		strings.TrimRight(githubAPIBase, "/"),
 		url.QueryEscape(searchQuery),
 		100, // GitHub API max per page
 	)
@@ -279,42 +436,6 @@ func fetchCodeSearchResultsByQuery(client *http.Client, searchQuery string) (*gi
 	return &searchResp, nil
 }
 
-func appendPreferredSkillRepoResults(client *http.Client, primary *gitHubSearchResponse, query string) {
-	if primary == nil {
-		return
-	}
-
-	for _, repo := range preferredSkillRepos {
-		searchQuery := buildTrustedSkillRepoSearchQuery(query, repo)
-		resp, err := fetchCodeSearchResultsByQuery(client, searchQuery)
-		if err != nil {
-			continue
-		}
-		primary.Items = append(primary.Items, resp.Items...)
-		primary.TotalCount += resp.TotalCount
-	}
-}
-
-func appendRepositorySearchSkillResults(client *http.Client, primary *gitHubSearchResponse, query string) {
-	if primary == nil || strings.TrimSpace(query) == "" {
-		return
-	}
-
-	repos, err := fetchRepositorySearchResults(client, query)
-	if err != nil {
-		return
-	}
-
-	for _, repo := range repos {
-		items, err := fetchRepositorySkillTreeItems(client, repo)
-		if err != nil {
-			continue
-		}
-		primary.Items = append(primary.Items, items...)
-		primary.TotalCount += len(items)
-	}
-}
-
 func fetchRepositorySearchResults(client *http.Client, query string) ([]gitHubRepositorySearchItem, error) {
 	searchQuery := buildGitHubRepositorySearchQuery(query)
 	if searchQuery == "" {
@@ -322,7 +443,8 @@ func fetchRepositorySearchResults(client *http.Client, query string) ([]gitHubRe
 	}
 
 	apiURL := fmt.Sprintf(
-		"https://api.github.com/search/repositories?q=%s&sort=stars&order=desc&per_page=%d",
+		"%s/search/repositories?q=%s&sort=stars&order=desc&per_page=%d",
+		strings.TrimRight(githubAPIBase, "/"),
 		url.QueryEscape(searchQuery),
 		8,
 	)
@@ -371,7 +493,8 @@ func fetchRepositorySkillTreeItems(client *http.Client, repo gitHubRepositorySea
 		ref = "HEAD"
 	}
 	apiURL := fmt.Sprintf(
-		"https://api.github.com/repos/%s/git/trees/%s?recursive=1",
+		"%s/repos/%s/git/trees/%s?recursive=1",
+		strings.TrimRight(githubAPIBase, "/"),
 		repo.FullName,
 		url.PathEscape(ref),
 	)
@@ -418,6 +541,7 @@ func repositorySkillTreeItems(repo gitHubRepositorySearchItem, tree []gitHubTree
 		items = append(items, gitHubCodeItem{
 			Name: "SKILL.md",
 			Path: entry.Path,
+			SHA:  entry.SHA,
 			Repository: gitHubRepository{
 				FullName:        repo.FullName,
 				StargazersCount: repo.StargazersCount,
@@ -479,23 +603,90 @@ func convertToSearchResult(item gitHubCodeItem, seen map[string]bool) (SearchRes
 	}
 
 	return SearchResult{
-		Name:   name,
-		Source: source,
-		Stars:  item.Repository.StargazersCount,
-		Owner:  owner,
-		Repo:   repo,
-		Path:   dirPath,
+		Name:    name,
+		Source:  source,
+		Stars:   item.Repository.StargazersCount,
+		Owner:   owner,
+		Repo:    repo,
+		Path:    dirPath,
+		blobSHA: item.SHA,
 	}, true
 }
 
-// enrichWithStars fetches and updates star counts for results in parallel.
+// enrichWithStars fetches and updates star counts for results.
 func enrichWithStars(client *http.Client, results []SearchResult) {
+	repoStars := fetchStarsMap(client, results)
+	applyStars(results, repoStars)
+}
+
+func applyStars(results []SearchResult, repoStars map[repoID]int) {
+	for i := range results {
+		id := repoID{results[i].Owner, results[i].Repo}
+		if stars, exists := repoStars[id]; exists {
+			results[i].Stars = stars
+		}
+	}
+}
+
+func fetchStarsMap(client *http.Client, results []SearchResult) map[repoID]int {
 	const maxRepoFetch = 30
+	repos := reposForStarFetch(results, maxRepoFetch)
+	if len(repos) == 0 {
+		return nil
+	}
+
+	repoStars := loadStarsCache(repos)
+	var uncached []repoID
+	for _, id := range repos {
+		if _, ok := repoStars[id]; !ok {
+			uncached = append(uncached, id)
+		}
+	}
+	if len(uncached) == 0 {
+		return repoStars
+	}
+
+	fetched := make(map[repoID]int, len(uncached))
+	var missing []repoID
+
+	if token := githubToken(); token != "" {
+		if gqlStars, err := fetchRepoStarsGraphQL(client, token, uncached); err == nil {
+			for _, id := range uncached {
+				if stars, ok := gqlStars[id]; ok {
+					fetched[id] = stars
+				} else {
+					missing = append(missing, id)
+				}
+			}
+		} else {
+			missing = uncached
+		}
+	} else {
+		missing = uncached
+	}
+
+	if len(missing) > 0 {
+		for id, stars := range fetchRepoStarsREST(client, missing) {
+			fetched[id] = stars
+		}
+	}
+
+	if len(fetched) > 0 {
+		saveStarsCache(fetched)
+		if repoStars == nil {
+			repoStars = make(map[repoID]int, len(fetched))
+		}
+		for id, stars := range fetched {
+			repoStars[id] = stars
+		}
+	}
+
+	return repoStars
+}
+
+func fetchRepoStarsREST(client *http.Client, repos []repoID) map[repoID]int {
 	const concurrency = 10
 
-	repos := reposForStarFetch(results, maxRepoFetch)
-
-	// Fetch stars concurrently
 	type starResult struct {
 		id    repoID
 		stars int
@@ -521,17 +712,11 @@ func enrichWithStars(client *http.Client, results []SearchResult) {
 		close(ch)
 	}()
 
-	repoStars := make(map[repoID]int)
+	repoStars := make(map[repoID]int, len(repos))
 	for sr := range ch {
 		repoStars[sr.id] = sr.stars
 	}
-
-	for i := range results {
-		id := repoID{results[i].Owner, results[i].Repo}
-		if stars, exists := repoStars[id]; exists {
-			results[i].Stars = stars
-		}
-	}
+	return repoStars
 }
 
 func reposForStarFetch(results []SearchResult, max int) []repoID {
@@ -569,13 +754,11 @@ func sortByStars(results []SearchResult) {
 	})
 }
 
-// enrichWithDescriptions fetches descriptions and names for top results in parallel.
+// enrichWithDescriptions fetches descriptions and names for top results.
 // In broad GitHub search mode, it also drops candidates whose SKILL.md does not
 // look like a skill frontmatter document. Candidates are kept on fetch errors so
 // transient GitHub failures do not turn a search into an empty result set.
 func enrichWithDescriptions(client *http.Client, results []SearchResult, limit int, filterInvalid bool) []SearchResult {
-	const concurrency = 10
-
 	n := len(results)
 	if n > limit {
 		n = limit
@@ -584,40 +767,28 @@ func enrichWithDescriptions(client *http.Client, results []SearchResult, limit i
 		return results
 	}
 
-	type metaResult struct {
-		idx  int
-		meta skillMetadata
-	}
-	ch := make(chan metaResult, n)
-	sem := make(chan struct{}, concurrency)
-	var wg sync.WaitGroup
-
+	targets := make([]skillMetaTarget, n)
 	for i := 0; i < n; i++ {
-		wg.Add(1)
-		go func(idx int) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			meta, err := fetchSkillMetadata(client, results[idx].Owner, results[idx].Repo, results[idx].Path)
-			if err == nil {
-				ch <- metaResult{idx, meta}
-			}
-		}(i)
+		targets[i] = skillMetaTarget{
+			key:     skillMetaKey{results[i].Owner, results[i].Repo, results[i].Path},
+			blobSHA: results[i].blobSHA,
+		}
 	}
 
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
+	fetched := fetchSkillMetadataMap(client, targets)
+	return applySkillMetadata(results, n, fetched, filterInvalid)
+}
 
-	fetched := make(map[int]skillMetadata, n)
-	for mr := range ch {
-		fetched[mr.idx] = mr.meta
-		if mr.meta.Description != "" {
-			results[mr.idx].Description = mr.meta.Description
-		}
-		if mr.meta.Name != "" {
-			results[mr.idx].Name = mr.meta.Name
+func applySkillMetadata(results []SearchResult, n int, fetched map[skillMetaKey]skillMetadata, filterInvalid bool) []SearchResult {
+	for i := 0; i < n; i++ {
+		key := skillMetaKey{results[i].Owner, results[i].Repo, results[i].Path}
+		if meta, ok := fetched[key]; ok {
+			if meta.Description != "" {
+				results[i].Description = meta.Description
+			}
+			if meta.Name != "" {
+				results[i].Name = meta.Name
+			}
 		}
 	}
 
@@ -627,12 +798,170 @@ func enrichWithDescriptions(client *http.Client, results []SearchResult, limit i
 
 	filtered := results[:0]
 	for i := range results {
-		if meta, ok := fetched[i]; ok && !meta.Valid {
-			continue
+		if i < n {
+			key := skillMetaKey{results[i].Owner, results[i].Repo, results[i].Path}
+			if meta, ok := fetched[key]; ok && !meta.Valid {
+				continue
+			}
 		}
 		filtered = append(filtered, results[i])
 	}
 	return filtered
+}
+
+func fetchSkillMetadataMap(client *http.Client, targets []skillMetaTarget) map[skillMetaKey]skillMetadata {
+	if len(targets) == 0 {
+		return nil
+	}
+
+	shas := make([]string, 0, len(targets))
+	for _, t := range targets {
+		if t.blobSHA != "" {
+			shas = append(shas, t.blobSHA)
+		}
+	}
+	cachedBySHA := loadMetadataCache(shas)
+
+	fetched := make(map[skillMetaKey]skillMetadata, len(targets))
+	var uncached []skillMetaTarget
+	for _, t := range targets {
+		if t.blobSHA != "" {
+			if meta, ok := cachedBySHA[t.blobSHA]; ok {
+				fetched[t.key] = meta
+				continue
+			}
+		}
+		uncached = append(uncached, t)
+	}
+	if len(uncached) == 0 {
+		return fetched
+	}
+
+	newCache := make(map[string]skillMetadata)
+	var missing []skillMetaTarget
+
+	if token := githubToken(); token != "" {
+		// A batch's latency grows with the size of the files it returns, so
+		// many small batches at once finish sooner than a few large ones.
+		const batchSize = metadataGraphQLBatchSize
+		const maxBatchConcurrency = 10
+
+		numBatches := (len(uncached) + batchSize - 1) / batchSize
+		type batchResult struct {
+			hits map[int]blobMetadataHit
+			err  error
+		}
+		batchResults := make([]batchResult, numBatches)
+		sem := make(chan struct{}, maxBatchConcurrency)
+		var wg sync.WaitGroup
+
+		for b := 0; b < numBatches; b++ {
+			start := b * batchSize
+			end := start + batchSize
+			if end > len(uncached) {
+				end = len(uncached)
+			}
+			batch := uncached[start:end]
+
+			wg.Add(1)
+			go func(idx int, items []skillMetaTarget) {
+				defer wg.Done()
+				sem <- struct{}{}
+				defer func() { <-sem }()
+				hits, err := fetchSkillMetadataGraphQLBatch(client, token, items)
+				batchResults[idx] = batchResult{hits: hits, err: err}
+			}(b, batch)
+		}
+		wg.Wait()
+
+		for b := 0; b < numBatches; b++ {
+			start := b * batchSize
+			end := start + batchSize
+			if end > len(uncached) {
+				end = len(uncached)
+			}
+			batch := uncached[start:end]
+			br := batchResults[b]
+			if br.err != nil {
+				missing = append(missing, batch...)
+				continue
+			}
+			for i, item := range batch {
+				if hit, ok := br.hits[i]; ok {
+					fetched[item.key] = hit.meta
+					sha := hit.oid
+					if sha == "" {
+						sha = item.blobSHA
+					}
+					if sha != "" {
+						newCache[sha] = hit.meta
+					}
+				} else {
+					missing = append(missing, item)
+				}
+			}
+		}
+	} else {
+		missing = uncached
+	}
+
+	if len(missing) > 0 {
+		restHits := fetchSkillMetadataREST(client, missing)
+		for _, item := range missing {
+			if hit, ok := restHits[item.key]; ok {
+				fetched[item.key] = hit.meta
+				sha := hit.oid
+				if sha == "" {
+					sha = item.blobSHA
+				}
+				if sha != "" {
+					newCache[sha] = hit.meta
+				}
+			}
+		}
+	}
+
+	if len(newCache) > 0 {
+		saveMetadataCache(newCache)
+	}
+
+	return fetched
+}
+
+func fetchSkillMetadataREST(client *http.Client, targets []skillMetaTarget) map[skillMetaKey]blobMetadataHit {
+	const concurrency = 10
+
+	type metaResult struct {
+		key skillMetaKey
+		hit blobMetadataHit
+	}
+	ch := make(chan metaResult, len(targets))
+	sem := make(chan struct{}, concurrency)
+	var wg sync.WaitGroup
+
+	for _, item := range targets {
+		wg.Add(1)
+		go func(t skillMetaTarget) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			meta, sha, err := fetchSkillMetadataWithSHA(client, t.key.owner, t.key.repo, t.key.path)
+			if err == nil {
+				ch <- metaResult{key: t.key, hit: blobMetadataHit{meta: meta, oid: sha}}
+			}
+		}(item)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	results := make(map[skillMetaKey]blobMetadataHit, len(targets))
+	for mr := range ch {
+		results[mr.key] = mr.hit
+	}
+	return results
 }
 
 func dedupeEquivalentSkills(results []SearchResult) []SearchResult {
@@ -774,7 +1103,7 @@ func scoreAndSort(results []SearchResult, query string) {
 
 // fetchRepoStars fetches the star count for a repository
 func fetchRepoStars(client *http.Client, owner, repo string) (int, error) {
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repo)
+	apiURL := fmt.Sprintf("%s/repos/%s/%s", strings.TrimRight(githubAPIBase, "/"), owner, repo)
 
 	req, err := ghclient.NewRequest(apiURL)
 	if err != nil {
@@ -801,48 +1130,53 @@ func fetchRepoStars(client *http.Client, owner, repo string) (int, error) {
 	return repoInfo.StargazersCount, nil
 }
 
-// fetchSkillMetadata fetches SKILL.md and extracts skill metadata from frontmatter.
-func fetchSkillMetadata(client *http.Client, owner, repo, path string) (skillMetadata, error) {
-	skillPath := "SKILL.md"
+func skillPathForDir(path string) string {
 	if path != "" && path != "." {
-		skillPath = path + "/SKILL.md"
+		return path + "/SKILL.md"
 	}
+	return "SKILL.md"
+}
+
+// fetchSkillMetadataWithSHA fetches SKILL.md via REST and returns metadata plus the Git blob sha.
+func fetchSkillMetadataWithSHA(client *http.Client, owner, repo, path string) (skillMetadata, string, error) {
+	skillPath := skillPathForDir(path)
 
 	apiURL := fmt.Sprintf(
-		"https://api.github.com/repos/%s/%s/contents/%s",
+		"%s/repos/%s/%s/contents/%s",
+		strings.TrimRight(githubAPIBase, "/"),
 		owner, repo, url.PathEscape(skillPath),
 	)
 
 	req, err := ghclient.NewRequest(apiURL)
 	if err != nil {
-		return skillMetadata{}, err
+		return skillMetadata{}, "", err
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return skillMetadata{}, err
+		return skillMetadata{}, "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return skillMetadata{}, fmt.Errorf("failed to fetch SKILL.md")
+		return skillMetadata{}, "", fmt.Errorf("failed to fetch SKILL.md")
 	}
 
 	var content gitHubContentResponse
 	if err := json.NewDecoder(resp.Body).Decode(&content); err != nil {
-		return skillMetadata{}, err
+		return skillMetadata{}, "", err
 	}
 
 	if content.Encoding != "base64" {
-		return skillMetadata{}, fmt.Errorf("unexpected encoding: %s", content.Encoding)
+		return skillMetadata{}, "", fmt.Errorf("unexpected encoding: %s", content.Encoding)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(content.Content)
 	if err != nil {
-		return skillMetadata{}, err
+		return skillMetadata{}, "", err
 	}
 
-	return parseSkillMetadata(string(decoded)), nil
+	return parseSkillMetadata(string(decoded)), content.SHA, nil
 }
 
 func parseSkillMetadata(content string) skillMetadata {

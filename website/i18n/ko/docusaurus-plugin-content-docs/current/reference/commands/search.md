@@ -177,6 +177,8 @@ GitHub Code Search API는 인증이 필요합니다. skillshare는 자격 증명
 
 이를 통해 고품질의 인기 있는 skill이 먼저 표시됩니다.
 
+GitHub 검색은 `~/.cache/skillshare/search/`에 캐시를 둡니다. 같은 쿼리는 10분 동안 이전 결과를 반환하고, 스타 수는 24시간 동안 재사용되며, 각 `SKILL.md` 설명은 파일 버전별로 저장됩니다. 새로 검색하려면 이 폴더를 삭제하세요.
+
 ## Community Hub
 
 [skillshare-hub](https://github.com/runkids/skillshare-hub)에서 커뮤니티가 선별한 skill을 둘러보고 설치합니다.

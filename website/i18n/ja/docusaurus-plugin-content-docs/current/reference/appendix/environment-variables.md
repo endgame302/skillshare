@@ -89,7 +89,7 @@ export XDG_STATE_HOME=~/my-state
 
 ### XDG_CACHE_HOME
 
-キャッシュディレクトリ（バージョンチェックキャッシュ、UI dist キャッシュ）を上書きします。
+キャッシュディレクトリ（バージョンチェックキャッシュ、UI dist キャッシュ、GitHub 検索キャッシュ）を上書きします。
 
 ```bash
 export XDG_CACHE_HOME=~/my-cache
@@ -533,7 +533,7 @@ export GITHUB_TOKEN="ghp_your_token_here"
 | `XDG_CONFIG_HOME` | ベースとなる config ディレクトリ | `~/.config`（Linux/macOS）、`%AppData%`（Windows） |
 | `XDG_DATA_HOME` | データディレクトリ（バックアップ、trash） | `~/.local/share` |
 | `XDG_STATE_HOME` | 状態ディレクトリ（ログ、ローカルのプロジェクト登録とロック） | `~/.local/state` |
-| `XDG_CACHE_HOME` | キャッシュディレクトリ（バージョンチェック、UI） | `~/.cache` |
+| `XDG_CACHE_HOME` | キャッシュディレクトリ（バージョンチェック、UI、検索） | `~/.cache` |
 | `GITHUB_TOKEN` | GitHub API + git clone 認証 | なし |
 | `GH_TOKEN` | GitHub API（`GITHUB_TOKEN` のフォールバック） | なし |
 | `GITLAB_TOKEN` | GitLab git clone 認証 | なし |

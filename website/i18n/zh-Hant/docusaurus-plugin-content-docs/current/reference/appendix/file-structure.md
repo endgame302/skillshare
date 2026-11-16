@@ -69,6 +69,7 @@ skillshare 的目錄配置與檔案位置。
 └── plugins/                 # Plugin 來源經審查後的本機副本
 
 ~/.cache/skillshare/         # XDG_CACHE_HOME      
+├── search/                  # GitHub 搜尋快取（結果 10 分鐘，星數 24 小時）
 ├── version-check.json       # 版本檢查快取（24 小時 TTL）
 └── ui/                      # Web UI dist 快取
     └── 0.13.0/              # 每個版本各自快取的資源
@@ -495,6 +496,7 @@ skillshare 遵循 XDG Base Directory Specification。可用 `XDG_CONFIG_HOME`、
 | 專案註冊及鎖定 | `~/.local/state/skillshare/projects/` |
 | Version cache | `~/.cache/skillshare/version-check.json` |
 | UI cache | `~/.cache/skillshare/ui/{version}/` |
+| Search cache | `~/.cache/skillshare/search/` |
 | Link type | Symlinks |
 
 ### Windows
@@ -511,6 +513,7 @@ skillshare 遵循 XDG Base Directory Specification。可用 `XDG_CONFIG_HOME`、
 | 專案註冊及鎖定 | `%LOCALAPPDATA%\skillshare\state\projects\` |
 | Version cache | `%AppData%\skillshare\version-check.json` |
 | UI cache | `%AppData%\skillshare\ui\{version}\` |
+| Search cache | `%AppData%\skillshare\search\` |
 | Link type | 資料夾用 NTFS Junctions；單一檔案用 symlinks（需要開發人員模式，否則改為複製） |
 
 ## XDG Base Directory 配置
@@ -522,7 +525,7 @@ skillshare 在 Unix 系統上遵循 [XDG Base Directory Specification](https://s
 | `XDG_CONFIG_HOME` | `~/.config` | `skillshare/config.yaml`、`skillshare/skills/`（包含 `.metadata.json`）、`skillshare/agents/` |
 | `XDG_DATA_HOME` | `~/.local/share` | `skillshare/backups/`、`skillshare/trash/` |
 | `XDG_STATE_HOME` | `~/.local/state` | `skillshare/logs/`, `skillshare/projects/` |
-| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（已下載的 web dashboard） |
+| `XDG_CACHE_HOME` | `~/.cache` | `skillshare/ui/`（已下載的 web dashboard）、`skillshare/search/`（GitHub 搜尋快取） |
 
 ### Windows 路徑
 
